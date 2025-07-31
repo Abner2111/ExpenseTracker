@@ -1,2 +1,24 @@
+# Sensitive files - never commit these
 credentials.json
-src/token.pickle:1
+src/token.pickle
+token.pickle
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+.env
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
