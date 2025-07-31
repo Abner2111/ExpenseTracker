@@ -58,7 +58,25 @@ El sistema categoriza automáticamente las transacciones en:
 - Hoja de cálculo de Google configurada
 - Correos de BAC Credomatic en la bandeja de entrada
 
-## 🚀 Instalación
+## � Plantilla de Hoja de Cálculo
+
+Para facilitar la configuración, puedes usar esta plantilla pre-configurada:
+
+🔗 **[Plantilla de Google Sheets](https://docs.google.com/spreadsheets/d/13P4kQm1xVlvnLSrm4Pv-mfW6t3KZyMYmIachqVDQtYU/edit?usp=sharing)**
+
+La plantilla incluye:
+- ✅ Columnas configuradas correctamente (B: Date, C: Amount, D: Description, E: Category)
+- ✅ Formato de presupuesto mensual
+- ✅ Secciones separadas para Gastos e Ingresos
+- ✅ Listo para usar con el sistema automático
+
+**Instrucciones:**
+1. Hacer clic en "Archivo" → "Hacer una copia"
+2. Renombrar la copia con tu mes/año (ej: "Agosto 2025 - Presupuesto")
+3. Copiar el ID de la URL de tu copia
+4. Usar ese ID en la configuración del proyecto
+
+## �🚀 Instalación
 
 1. **Clonar el repositorio:**
 ```bash
@@ -78,8 +96,9 @@ pip install -r requirements.txt
    - Descargar `credentials.json` y colocarlo en la carpeta `src/`
 
 4. **Configurar la hoja de cálculo:**
-   - Crear una hoja de Google Sheets
-   - Asegurarse de que tenga las columnas: Fecha, Monto, Descripción, Categoría
+   - **Usar plantilla:** Hacer una copia de [esta plantilla de Google Sheets](https://docs.google.com/spreadsheets/d/13P4kQm1xVlvnLSrm4Pv-mfW6t3KZyMYmIachqVDQtYU/edit?usp=sharing)
+   - **O crear manualmente:** Crear una hoja de Google Sheets nueva
+   - Asegurarse de que tenga las columnas: Date, Amount, Description, Category en las columnas B, C, D, E
    - Copiar el ID de la hoja de cálculo de la URL
 
 ## ⚙️ Configuración
