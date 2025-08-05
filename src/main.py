@@ -1,5 +1,7 @@
+import os
 import os.path
 import base64
+import pickle
 import re
 import time
 from datetime import datetime
@@ -12,6 +14,8 @@ from googleapiclient.errors import HttpError
 
 import gspread
 from bs4 import BeautifulSoup
+import requests
+import json
 
 # Import configurations
 from config import SPREADSHEET_ID, SPREADSHEET_NAME, GMAIL_CREDENTIALS_PATH, TOKEN_PATH, FILTER_BY_MONTH
@@ -134,34 +138,71 @@ def parse_expense_from_email(email_text):
         'date': datetime.now().strftime('%Y-%m-%d'), # Default
         'vendor': 'Unknown',
         'amount': 0.0,
-        'category': 'General',
-        'notes': ''
+        'category': 'Personal',
+        'notes': 'Parsed from email receipt (CR)'
     }
 
     email_text_lower = email_text.lower()
 
-    # --- Amount Parsing (Added CRC - Costa Rican Colón) ---
+    # --- Amount Parsing with Currency Detection and Conversion ---
     amount_patterns = [
-        r'CRC\s+(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)', # BAC format: CRC 5,650.00 - prioritize this
-        r'(?:Monto|Total|Monto Total|Total a Pagar|Subtotal|Gran Total):\s*(?:CRC|₡)?\s*(\d{1,3}(?:\.\d{3})*(?:,\d{2})?)', # CRC format: 1.234,56
-        r'(\d{1,3}(?:,\d{3})*(?:\.\d{2}?))\s*(?:USD|CRC|₡|colones|dolares)\b', # e.g., 25.50 USD or 5000 CRC
-        r'[\$£€₡]\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2}?))\b' # general currency symbol
+        # Pattern with explicit currency - CRC format
+        (r'CRC\s+(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)', 'CRC'), # BAC format: CRC 5,650.00
+        # Pattern with explicit currency - USD format (specific patterns first)
+        (r'(?:Monto|Total):\s*USD\s+(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)', 'USD'), # Monto: USD 9.99
+        (r'USD\s+(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)', 'USD'), # USD 9.99
+        (r'(\d{1,3}(?:,\d{3})*(?:\.\d{2}?))\s*USD\b', 'USD'), # e.g., 25.50 USD
+        (r'\$(\d{1,3}(?:,\d{3})*(?:\.\d{2}?))', 'USD'), # $25.50 (assume USD)
+        # Pattern with explicit currency - EUR format
+        (r'(?:Monto|Total):\s*EUR\s+(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)', 'EUR'), # Monto: EUR 25.50
+        (r'EUR\s+(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)', 'EUR'), # EUR 25.50
+        (r'(\d{1,3}(?:,\d{3})*(?:\.\d{2}?))\s*EUR\b', 'EUR'), # e.g., 25.50 EUR
+        (r'€(\d{1,3}(?:,\d{3})*(?:\.\d{2}?))', 'EUR'), # €25.50
+        # CRC patterns with colón symbol
+        (r'₡\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)', 'CRC'), # ₡5,650.00
+        (r'(\d{1,3}(?:,\d{3})*(?:\.\d{2}?))\s*(?:CRC|₡|colones)\b', 'CRC'), # 5000 CRC
+        # Generic patterns (assume CRC if no currency specified)
+        (r'(?:Monto|Total|Monto Total|Total a Pagar|Subtotal|Gran Total):\s*(?:CRC|₡)?\s*(\d{1,3}(?:\.\d{3})*(?:,\d{2})?)', 'CRC'), # CRC format: 1.234,56
+        (r'Monto:\s*[\r\n\s]*([₡\$]?\d{1,3}(?:,\d{3})*(?:\.\d{2})?)', 'UNKNOWN'), # Look for "Monto:" followed by amount
+        (r'Total:\s*[\r\n\s]*([₡\$]?\d{1,3}(?:,\d{3})*(?:\.\d{2})?)', 'UNKNOWN'), # Look for "Total:" followed by amount
+        (r'([₡\$]?\d{1,3}(?:,\d{3})*\.\d{2})', 'UNKNOWN'), # Any amount with decimal places
     ]
     
-    print(f"Debug: Searching for amounts in email text (first 500 chars): {repr(email_text[:500])}")  # Debug line
+    print(f"Debug: Searching for amounts with currency detection...")
     
-    for i, pattern in enumerate(amount_patterns):
+    original_currency = 'CRC'  # Default currency
+    conversion_rate = 1.0
+    
+    for i, (pattern, currency_hint) in enumerate(amount_patterns):
         match = re.search(pattern, email_text, re.IGNORECASE)
         if match:
             amount_str = match.group(1)
-            print(f"Debug: Pattern {i+1} found amount match: '{amount_str}' using pattern: {pattern}")
+            detected_currency = currency_hint
+            print(f"Debug: Pattern {i+1} found amount match: '{amount_str}' with currency hint: '{detected_currency}' using pattern: {pattern}")
             
-            # Handle BAC format specifically: 5,650.00 should become 5650.00
+            # Determine actual currency based on symbols in the amount string
+            if '₡' in amount_str:
+                detected_currency = 'CRC'
+                amount_str = amount_str.replace('₡', '').strip()
+            elif '$' in amount_str:
+                detected_currency = 'USD'
+                amount_str = amount_str.replace('$', '').strip()
+            elif '€' in amount_str:
+                detected_currency = 'EUR'
+                amount_str = amount_str.replace('€', '').strip()
+            elif detected_currency == 'UNKNOWN':
+                # Try to infer from context or default to CRC
+                detected_currency = 'CRC'
+                amount_str = amount_str.replace('₡', '').replace('$', '').strip()
+            
+            print(f"Debug: Detected currency: {detected_currency}")
+            
+            # Handle different number formats: 5,650.00 should become 5650.00
             if ',' in amount_str and '.' in amount_str:
                 # This is US/BAC format: 5,650.00
                 # Remove commas (thousands separators)
                 processed_amount = amount_str.replace(',', '')
-                print(f"Debug: BAC/US format - '{amount_str}' -> '{processed_amount}'")
+                print(f"Debug: US/BAC format - '{amount_str}' -> '{processed_amount}'")
                 amount_str = processed_amount
             elif ',' in amount_str and '.' not in amount_str:
                 # This might be European format: 5650,00 (but unlikely in BAC emails)
@@ -178,8 +219,19 @@ def parse_expense_from_email(email_text):
                 print(f"Debug: No comma processing needed for '{amount_str}'")
             
             try:
-                expense_data['amount'] = float(amount_str)
-                print(f"Debug: Final parsed amount: {expense_data['amount']}")
+                amount_value = float(amount_str)
+                print(f"Debug: Parsed amount: {amount_value} {detected_currency}")
+                
+                # Convert to CRC if needed
+                if detected_currency.upper() != 'CRC':
+                    converted_amount, original_currency, conversion_rate = convert_currency_to_crc(amount_value, detected_currency)
+                    expense_data['amount'] = converted_amount
+                    expense_data['notes'] += f" | Original: {amount_value} {original_currency} (Rate: {conversion_rate})"
+                else:
+                    expense_data['amount'] = amount_value
+                    original_currency = detected_currency
+                
+                print(f"Debug: Final amount in CRC: {expense_data['amount']}")
                 break
             except ValueError:
                 print(f"Debug: Failed to parse amount: {amount_str}")
@@ -195,43 +247,108 @@ def parse_expense_from_email(email_text):
     print(f"Debug: Final amount before returning: {expense_data['amount']}")  # Debug line
 
     # --- Date Parsing (Added common CR date formats) ---
-    date_patterns = [
-        r'(?:Fecha|Date|Fecha de Compra|Fecha de Transacción):\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})', # DD/MM/YYYY or DD-MM-YYYY
-        r'(\w{3}\s+\d{1,2},\s+\d{4},\s+\d{1,2}:\d{2})', # BAC format: Jul 31, 2025, 14:29
-        r'(\d{4}-\d{2}-\d{2})', # YYYY-MM-DD
-        r'(\d{1,2}\s+(?:ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic)\.?\s+\d{4})', # DD Mon YYYY
-        r'(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+\d{1,2},\s+\d{4}', # Month DD, YYYY (Spanish)
-        r'(\w{3}\s+\d{1,2},\s+\d{4})' # English Mon DD, YYYY
-    ]
-    for pattern in date_patterns:
-        match = re.search(pattern, email_text, re.IGNORECASE)  # Use original text for date parsing
-        if match:
-            date_str = match.group(1).replace('.', '')
-            # Handle BAC datetime format by removing time portion
-            if ',' in date_str and ':' in date_str:
-                date_str = date_str.split(',')[0] + ',' + date_str.split(',')[1].split(',')[0]  # Remove time
-            
-            for fmt in ['%b %d, %Y', '%d/%m/%Y', '%d-%m-%Y', '%Y-%m-%d', '%d %b %Y', '%B %d, %Y', '%d %B %Y']:
-                try:
-                    # Handle month names in Spanish if they appear without abbreviations
-                    if 'enero' in date_str: date_str = date_str.replace('enero', 'Jan')
-                    elif 'febrero' in date_str: date_str = date_str.replace('febrero', 'Feb')
-                    elif 'marzo' in date_str: date_str = date_str.replace('marzo', 'Mar')
-                    elif 'abril' in date_str: date_str = date_str.replace('abril', 'Apr')
-                    elif 'mayo' in date_str: date_str = date_str.replace('mayo', 'May')
-                    elif 'junio' in date_str: date_str = date_str.replace('junio', 'Jun')
-                    elif 'julio' in date_str: date_str = date_str.replace('julio', 'Jul')
-                    elif 'agosto' in date_str: date_str = date_str.replace('agosto', 'Aug')
-                    elif 'septiembre' in date_str: date_str = date_str.replace('septiembre', 'Sep')
-                    elif 'octubre' in date_str: date_str = date_str.replace('octubre', 'Oct')
-                    elif 'noviembre' in date_str: date_str = date_str.replace('noviembre', 'Nov')
-                    elif 'diciembre' in date_str: date_str = date_str.replace('diciembre', 'Dec')
+    print(f"Debug: Starting date parsing...")
+    print(f"Debug: First 500 chars of email text for date analysis:\n{email_text[:500]}")
+    
+    # Special handling for BAC format with lots of whitespace/newlines
+    # Look for "Fecha:" followed by date on potentially next lines
+    # Updated to handle Spanish abbreviations like "Ago" for "Agosto"
+    bac_date_match = re.search(r'Fecha:\s*[\r\n\s]*(\w{3}\s+\d{1,2},\s+\d{4})(?:,\s+\d{1,2}:\d{2})?', email_text, re.IGNORECASE)
+    if bac_date_match:
+        date_str = bac_date_match.group(1).strip()
+        print(f"Debug: Found BAC date format: '{date_str}'")
+        
+        # Handle Spanish month abbreviations
+        spanish_months = {
+            'ene': 'Jan', 'feb': 'Feb', 'mar': 'Mar', 'abr': 'Apr',
+            'may': 'May', 'jun': 'Jun', 'jul': 'Jul', 'ago': 'Aug',
+            'sep': 'Sep', 'oct': 'Oct', 'nov': 'Nov', 'dic': 'Dec'
+        }
+        
+        # Convert Spanish month abbreviations to English
+        for spanish_abbr, english_abbr in spanish_months.items():
+            if spanish_abbr.lower() in date_str.lower():
+                date_str = re.sub(r'\b' + spanish_abbr + r'\b', english_abbr, date_str, flags=re.IGNORECASE)
+                print(f"Debug: Converted Spanish month '{spanish_abbr}' to '{english_abbr}': '{date_str}'")
+                break
+        
+        try:
+            expense_data['date'] = datetime.strptime(date_str, '%b %d, %Y').strftime('%Y-%m-%d')
+            print(f"Debug: Successfully parsed BAC date: {expense_data['date']}")
+        except ValueError as e:
+            print(f"Debug: Failed to parse BAC date: {date_str}, error: {e}")
+    else:
+        print("Debug: No BAC date format found, trying other patterns...")
+        # Fall back to other date patterns
+        date_patterns = [
+            r'(?:Fecha|Date|Fecha de Compra|Fecha de Transacción):\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})', # DD/MM/YYYY or DD-MM-YYYY
+            r'(?:procesada el|el)\s+(\d{1,2}[/-]\d{1,2}[/-]\d{4})', # "procesada el DD/MM/YYYY"
+            r'(\w{3}\s+\d{1,2},\s+\d{4},\s+\d{1,2}:\d{2})', # BAC format: Jul 31, 2025, 14:29
+            r'(\d{4}-\d{2}-\d{2})', # YYYY-MM-DD
+            r'(\d{1,2}\s+(?:ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic)\.?\s+\d{4})', # DD Mon YYYY
+            r'(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+\d{1,2},\s+\d{4}', # Month DD, YYYY (Spanish)
+            r'(\w{3}\s+\d{1,2},\s+\d{4})', # English Mon DD, YYYY
+            r'(\d{1,2}[/-]\d{1,2}[/-]\d{4})' # General DD/MM/YYYY or MM/DD/YYYY format
+        ]
+        date_found = False
+        for i, pattern in enumerate(date_patterns):
+            match = re.search(pattern, email_text, re.IGNORECASE)  # Use original text for date parsing
+            if match:
+                date_str = match.group(1).replace('.', '')
+                print(f"Debug: Pattern {i+1} found date: '{date_str}' using pattern: {pattern}")
+                # Handle BAC datetime format by removing time portion
+                if ',' in date_str and ':' in date_str:
+                    # Split on comma, keep first two parts, remove time from second part
+                    parts = date_str.split(',')
+                    if len(parts) >= 2:
+                        date_str = parts[0] + ',' + parts[1].split(' ')[0] + ' ' + parts[1].split(' ')[1]
+                    print(f"Debug: Cleaned datetime format: '{date_str}'")
+                
+                for fmt in ['%b %d, %Y', '%d/%m/%Y', '%d-%m-%Y', '%Y-%m-%d', '%d %b %Y', '%B %d, %Y', '%d %B %Y', '%m/%d/%Y']:
+                    try:
+                        # Handle month names in Spanish if they appear without abbreviations or with abbreviations
+                        date_str_clean = date_str
+                        
+                        # Handle Spanish month abbreviations first
+                        spanish_months = {
+                            'ene': 'Jan', 'feb': 'Feb', 'mar': 'Mar', 'abr': 'Apr',
+                            'may': 'May', 'jun': 'Jun', 'jul': 'Jul', 'ago': 'Aug',
+                            'sep': 'Sep', 'oct': 'Oct', 'nov': 'Nov', 'dic': 'Dec'
+                        }
+                        
+                        for spanish_abbr, english_abbr in spanish_months.items():
+                            if spanish_abbr.lower() in date_str_clean.lower():
+                                date_str_clean = re.sub(r'\b' + spanish_abbr + r'\b', english_abbr, date_str_clean, flags=re.IGNORECASE)
+                                break
+                        
+                        # Handle full Spanish month names
+                        if 'enero' in date_str_clean.lower(): date_str_clean = date_str_clean.lower().replace('enero', 'Jan')
+                        elif 'febrero' in date_str_clean.lower(): date_str_clean = date_str_clean.lower().replace('febrero', 'Feb')
+                        elif 'marzo' in date_str_clean.lower(): date_str_clean = date_str_clean.lower().replace('marzo', 'Mar')
+                        elif 'abril' in date_str_clean.lower(): date_str_clean = date_str_clean.lower().replace('abril', 'Apr')
+                        elif 'mayo' in date_str_clean.lower(): date_str_clean = date_str_clean.lower().replace('mayo', 'May')
+                        elif 'junio' in date_str_clean.lower(): date_str_clean = date_str_clean.lower().replace('junio', 'Jun')
+                        elif 'julio' in date_str_clean.lower(): date_str_clean = date_str_clean.lower().replace('julio', 'Jul')
+                        elif 'agosto' in date_str_clean.lower(): date_str_clean = date_str_clean.lower().replace('agosto', 'Aug')
+                        elif 'septiembre' in date_str_clean.lower(): date_str_clean = date_str_clean.lower().replace('septiembre', 'Sep')
+                        elif 'octubre' in date_str_clean.lower(): date_str_clean = date_str_clean.lower().replace('octubre', 'Oct')
+                        elif 'noviembre' in date_str_clean.lower(): date_str_clean = date_str_clean.lower().replace('noviembre', 'Nov')
+                        elif 'diciembre' in date_str_clean.lower(): date_str_clean = date_str_clean.lower().replace('diciembre', 'Dec')
 
-                    expense_data['date'] = datetime.strptime(date_str, fmt).strftime('%Y-%m-%d')
+                        expense_data['date'] = datetime.strptime(date_str_clean, fmt).strftime('%Y-%m-%d')
+                        print(f"Debug: Successfully parsed date: {expense_data['date']} using format: {fmt}")
+                        date_found = True
+                        break
+                    except ValueError as e:
+                        print(f"Debug: Failed to parse '{date_str_clean}' with format '{fmt}': {e}")
+                        continue
+                if date_found:
                     break
-                except ValueError:
-                    pass
-            break
+        
+        if not date_found:
+            print("Debug: No date patterns matched, keeping default date")
+    
+    print(f"Debug: Final date assigned: {expense_data['date']}")
 
     # --- Vendor Identification (Costa Rica Specific & Common) ---
     # All vendor keywords in lowercase for case-insensitive matching
@@ -299,13 +416,14 @@ def parse_expense_from_email(email_text):
 
     # Check for vendor in "Comercio:" field (BAC format)
     # Handle multi-line vendor names by looking for the next field after Comercio
-    comercio_match = re.search(r'Comercio:\s*(.+?)(?=\n\s*(?:Ciudad y país|Fecha|VISA|Autorización))', email_text, re.IGNORECASE | re.DOTALL)
+    comercio_match = re.search(r'Comercio:\s*([^\n]+?)(?=\n|$)', email_text, re.IGNORECASE)
     if comercio_match:
         comercio_name = comercio_match.group(1).strip()
-        # Clean up any extra whitespace and newlines, join multiple lines with space
-        comercio_name = ' '.join(comercio_name.split())
-        expense_data['vendor'] = comercio_name
-        print(f"Debug: Found vendor in Comercio field: '{comercio_name}'")
+        # Remove any currency amounts from the vendor name
+        comercio_name = re.sub(r'\s*[\$₡€]?\s*\d{1,3}(?:,\d{3})*(?:\.\d{2})?\s*(?:USD|EUR|CRC)?\s*$', '', comercio_name, flags=re.IGNORECASE)
+        comercio_name = re.sub(r'\s*(?:USD|EUR|CRC)\s+\d{1,3}(?:,\d{3})*(?:\.\d{2})?\s*$', '', comercio_name, flags=re.IGNORECASE)
+        expense_data['vendor'] = comercio_name.strip()
+        print(f"Debug: Found vendor in Comercio field: '{expense_data['vendor']}'")
     else:
         # Only check general vendor keywords if we didn't find a vendor in Comercio field
         print("Debug: No Comercio field found, checking vendor keywords...")
@@ -361,7 +479,8 @@ def parse_expense_from_email(email_text):
           or 'pequeño mundo' in vendor_lower 
           or 'mega super' in vendor_lower
           or 'super compro' in vendor_lower
-          or 'perimercados' in vendor_lower):
+          or 'perimercados' in vendor_lower
+          or 'musi' in vendor_lower):  # Any vendor containing "MUSI" is groceries
         expense_data['category'] = 'Groceries'
         print(f"Debug: Assigned category 'Groceries' (grocery store match)")
     
@@ -436,7 +555,7 @@ def parse_expense_from_email(email_text):
     # Streaming - entertainment services
     elif ('netflix' in vendor_lower or 'spotify' in vendor_lower 
           or 'amazon prime' in vendor_lower or 'disney' in vendor_lower
-          or 'streaming' in vendor_lower):
+          or 'streaming' in vendor_lower or 'google wm max llc' in vendor_lower):
         expense_data['category'] = 'Streaming'
         print(f"Debug: Assigned category 'Streaming' (streaming service match)")
     
@@ -453,10 +572,10 @@ def parse_expense_from_email(email_text):
         expense_data['category'] = 'Gifts'
         print(f"Debug: Assigned category 'Gifts' (gift vendor match)")
     
-    # Default to General if no specific category matches
+    # Default to Personal if no specific category matches
     else:
-        expense_data['category'] = 'General'
-        print(f"Debug: Assigned default category 'General' (no specific match)")
+        expense_data['category'] = 'Personal'
+        print(f"Debug: Assigned default category 'Personal' (no specific match)")
 
     print(f"Debug: Final category assigned: '{expense_data['category']}'")
 
@@ -464,15 +583,70 @@ def parse_expense_from_email(email_text):
     # You might want to extract a specific line from the email for notes or the email subject
     subject_match = re.search(r'Subject: (.+)', email_text, re.IGNORECASE)
     if subject_match:
-        expense_data['notes'] = f"Email Subject: {subject_match.group(1).strip()}"
-    else:
-        expense_data['notes'] = "Parsed from email receipt (CR)."
-
+        expense_data['notes'] = f"Email Subject: {subject_match.group(1).strip()}" + (expense_data['notes'] if 'Original:' in expense_data['notes'] else '')
+    # If no subject found, keep existing notes (which may include currency conversion info)
 
     return expense_data
 
+def get_exchange_rate(from_currency, to_currency='CRC'):
+    """
+    Get current exchange rate from one currency to another.
+    Default converts to Costa Rican Colones (CRC).
+    """
+    try:
+        # Using exchangerate-api.com (free tier allows 1500 requests/month)
+        url = f"https://api.exchangerate-api.com/v4/latest/{from_currency}"
+        response = requests.get(url, timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            if to_currency in data['rates']:
+                rate = data['rates'][to_currency]
+                print(f"Debug: Exchange rate {from_currency} to {to_currency}: {rate}")
+                return rate
+            else:
+                print(f"Warning: {to_currency} not found in exchange rates")
+                return None
+        else:
+            print(f"Warning: Failed to get exchange rate. Status code: {response.status_code}")
+            return None
+    except Exception as e:
+        print(f"Warning: Error getting exchange rate: {e}")
+        return None
+
+def convert_currency_to_crc(amount, currency):
+    """
+    Convert amount from given currency to Costa Rican Colones (CRC).
+    Returns tuple: (converted_amount, original_currency, conversion_rate)
+    """
+    if currency.upper() == 'CRC':
+        return amount, currency, 1.0
+    
+    # Common fallback rates if API fails (approximate rates as of 2025)
+    fallback_rates = {
+        'USD': 520.0,  # 1 USD ≈ 520 CRC (approximate)
+        'EUR': 570.0,  # 1 EUR ≈ 570 CRC (approximate)
+        'GBP': 650.0,  # 1 GBP ≈ 650 CRC (approximate)
+    }
+    
+    # Try to get current exchange rate
+    rate = get_exchange_rate(currency.upper(), 'CRC')
+    
+    if rate is None:
+        # Use fallback rate if available
+        if currency.upper() in fallback_rates:
+            rate = fallback_rates[currency.upper()]
+            print(f"Debug: Using fallback rate for {currency}: {rate}")
+        else:
+            print(f"Warning: No exchange rate available for {currency}. Using original amount.")
+            return amount, currency, 1.0
+    
+    converted_amount = amount * rate
+    print(f"Debug: Converted {amount} {currency} to {converted_amount:.2f} CRC (rate: {rate})")
+    return converted_amount, currency, rate
+
 def add_expense_to_sheet(gspread_client, expense_data):
-    """Appends expense data to the Expenses section of the Google Sheet with rate limiting."""
+    """Appends expense data to the Expenses section of the Google Sheet with rate limiting and duplicate checking."""
     max_retries = 3
     retry_delay = 60  # Start with 60 seconds delay
     
@@ -480,6 +654,34 @@ def add_expense_to_sheet(gspread_client, expense_data):
         try:
             spreadsheet = gspread_client.open_by_key(SPREADSHEET_ID)
             worksheet = spreadsheet.worksheet(SPREADSHEET_NAME)
+
+            # Check for duplicates by getting all existing data in the Expenses section
+            # Get data from columns B-E (Date, Amount, Vendor, Category) starting from row 4
+            try:
+                existing_data = worksheet.get('B4:E1000')  # Get a large range to catch all data
+                
+                # Check if this expense already exists
+                for row in existing_data:
+                    if len(row) >= 3:  # Make sure we have at least date, amount, vendor
+                        existing_date = row[0] if len(row) > 0 else ''
+                        existing_amount = row[1] if len(row) > 1 else ''
+                        existing_vendor = row[2] if len(row) > 2 else ''
+                        
+                        # Convert existing amount to float for comparison
+                        try:
+                            existing_amount_float = float(str(existing_amount).replace(',', ''))
+                        except (ValueError, TypeError):
+                            existing_amount_float = 0.0
+                        
+                        # Check if this is a duplicate (same date, amount, and vendor)
+                        if (existing_date == expense_data['date'] and 
+                            abs(existing_amount_float - expense_data['amount']) < 0.01 and  # Allow small floating point differences
+                            existing_vendor.lower() == expense_data['vendor'].lower()):
+                            print(f"⚠ Duplicate expense detected: {expense_data['vendor']} - ₡{expense_data['amount']:.2f} on {expense_data['date']}. Skipping.")
+                            return True  # Return True to mark as "processed" but don't add duplicate
+                            
+            except Exception as e:
+                print(f"Warning: Could not check for duplicates: {e}. Proceeding with add.")
 
             # Find the next empty row in the Expenses section (columns B-E)
             # Get all values in column B (Date column for Expenses)
@@ -505,7 +707,7 @@ def add_expense_to_sheet(gspread_client, expense_data):
             worksheet.update(f'D{next_row}', expense_data['vendor'])
             worksheet.update(f'E{next_row}', expense_data['category'])
             
-            print(f"Added expense: {expense_data['vendor']} - ₡{expense_data['amount']:.2f} to Expenses section at row {next_row}.")
+            print(f"✓ Added new expense: {expense_data['vendor']} - ₡{expense_data['amount']:.2f} to Expenses section at row {next_row}.")
             return True
             
         except Exception as e:
@@ -559,10 +761,11 @@ def main():
 
     print(f"Found {len(messages)} emails to process.")
     processed_count = 0
+    skipped_count = 0
     
     for i, msg in enumerate(messages):
         email_id = msg['id']
-        print(f"Processing email {i+1}/{len(messages)} - ID: {email_id}")
+        print(f"\nProcessing email {i+1}/{len(messages)} - ID: {email_id}")
         
         # Add delay between processing emails to avoid rate limits
         if i > 0:  # Don't delay before first email
@@ -573,19 +776,27 @@ def main():
 
         if email_body:
             expense_data = parse_expense_from_email(email_body)
+            print(f"Parsed expense: {expense_data['vendor']} - ₡{expense_data['amount']:.2f} on {expense_data['date']}")
 
             if expense_data['amount'] > 0:
                 if add_expense_to_sheet(sheets_client, expense_data):
                     mark_email_as_read(gmail_service, email_id)
                     processed_count += 1
+                    print(f"✓ Successfully processed expense from {expense_data['vendor']}")
                 else:
-                    print(f"Skipping email {email_id} due to Google Sheets error.")
+                    print(f"✗ Failed to add expense to sheet for email {email_id}")
+                    skipped_count += 1
             else:
-                print(f"Could not extract valid expense amount from email {email_id}. Skipping.")
+                print(f"✗ Could not extract valid expense amount from email {email_id}. Skipping.")
+                skipped_count += 1
         else:
-            print(f"Could not retrieve content for email {email_id}. Skipping.")
+            print(f"✗ Could not retrieve content for email {email_id}. Skipping.")
+            skipped_count += 1
 
-    print(f"\nFinished processing. Added {processed_count} expenses to Google Sheet.")
+    print(f"\n=== PROCESSING COMPLETE ===")
+    print(f"Successfully processed: {processed_count} expenses")
+    print(f"Skipped: {skipped_count} emails")
+    print(f"Total emails processed: {len(messages)}")
 
 if __name__ == '__main__':
     main()
