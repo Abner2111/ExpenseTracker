@@ -17,8 +17,9 @@ from bs4 import BeautifulSoup
 import requests
 import json
 
-# Import configurations
+# Import configurations and database
 from config import SPREADSHEET_ID, SPREADSHEET_NAME, GMAIL_CREDENTIALS_PATH, TOKEN_PATH, FILTER_BY_MONTH
+from database import ExpenseDatabase
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/gmail.modify', 'https://www.googleapis.com/auth/spreadsheets']
@@ -350,232 +351,33 @@ def parse_expense_from_email(email_text):
     
     print(f"Debug: Final date assigned: {expense_data['date']}")
 
-    # --- Vendor Identification (Costa Rica Specific & Common) ---
-    # All vendor keywords in lowercase for case-insensitive matching
-    vendor_keywords = {
-        # Fast Food Chains
-        'kfc': 'KFC', 'kfc express': 'KFC Express', 'mcdonalds': 'McDonalds CR',
-        'burger king': 'Burger King CR', 'pizza hut': 'Pizza Hut CR', 'dominos pizza': 'Dominos Pizza CR',
-        'subway': 'Subway CR', 'taco bell': 'Taco Bell CR',
-        
-        # Supermarkets
-        'automercado': 'Automercado', 'mas x menos': 'Mas x Menos', 'maxi pali': 'Maxi Pali',
-        'pali': 'Pali', 'pricesmart': 'PriceSmart', 'mega super': 'Mega Super',
-        'super compro': 'Super Compro', 'perimercados': 'Perimercados',
-        'walmart': 'Walmart Costa Rica', 'pequeño mundo': 'Pequeño Mundo',
-        'vindi': 'Vindi (Convenience)', 'am pm': 'AM PM (Convenience)', 'fresh market': 'Fresh Market (Convenience)',
-
-        # Ride-sharing / Transportation
-        'uber': 'Uber', 'didi': 'DiDi (Transportation)', 'indriver': 'inDrive (Transportation)',
-        'ticoride': 'TicoRide', 'interbus': 'Interbus (Shuttle)', 'ride cr': 'RIDE CR (Transportation)',
-        'transportes': 'Transportation (General)', 'shuttle': 'Shuttle Service',
-        'dlc* uber rides': 'Uber Rides',
-
-        # Food Delivery & Dining
-        'uber eats': 'Uber Eats', 'dlc* uber eats': 'Uber Eats',
-        'fiesta express': 'Fiesta Express Delivery',
-        'rappi': 'Rappi (Delivery)', 'glovo': 'Glovo (Delivery)',
-        'comidas el shaddai': 'Comidas El Shaddai',
-        'coral ibm': 'Coral IBM',
-
-        # Snacks / Convenience
-        'pronto snack': 'Pronto Snack',
-        'delimart afz': 'Delimart AFZ',
-
-        # Cafes/Restaurants (examples)
-        'cafe britt': 'Café Britt', 'café britt': 'Café Britt', 'cafe del barista': 'Café del Barista', 'cafeoteca': 'Cafeoteca',
-        'soda': 'Soda (Local Restaurant)', 'pollo rostizado': 'Pollo Rostizado (Food)',
-
-        # Banks
-        'banco nacional': 'Banco Nacional', 'banco de costa rica': 'Banco de Costa Rica (BCR)',
-        'banco popular': 'Banco Popular', 'bac credomatic': 'BAC Credomatic',
-        'scotiabank': 'Scotiabank CR', 'banco lafise': 'Banco Lafise', 'banco bct': 'Banco BCT',
-        'banco improsa': 'Banco Improsa',
-
-        # Utilities / Services
-        'ice electricidad': 'ICE (Electricity/Telecom)', 'aya agua': 'AyA (Water)', 'kolbi': 'Kolbi (Telecom)',
-        'claro': 'Claro (Telecom)', 'movistar': 'Movistar (Telecom)', 'cnfl': 'CNFL (Electricity)',
-        'jasec': 'Jasec (Electricity/Water)', 'coopeguanacaste': 'CoopeGuanacaste (Electricity)',
-
-        # Retail / Other common stores
-        'el gallo mas gallo': 'El Gallo Mas Gallo (Electronics/Home)',
-        'tienda el rey': 'Tienda El Rey (Variety Store)',
-        'ferreteria': 'Hardware Store', 'farmacia': 'Pharmacy', 'gasolinera': 'Gas Station',
-        'gas station': 'Gas Station', 'mascotas': 'Pet Store', 'cemaco': 'Cemaco (Home Goods)',
-        'universal': 'Universal (Department Store/Books)', 'libreria': 'Bookstore',
-        'correos de costa rica': 'Correos de Costa Rica (Post Office)',
-        'siman': 'Siman (Department Store)', 'multiplaza': 'Multiplaza (Mall)', 'city mall': 'City Mall (Mall)',
-
-        # General
-        'hotel': 'Hotel', 'restaurante': 'Restaurant', 'tour': 'Tour/Activity',
-        'parque nacional': 'National Park', 'entrada': 'Entrance Fee',
-        'peaje': 'Toll', 'tax': 'Tax', 'impuesto': 'Tax',
-        'servicio': 'Service Fee', 'alquiler': 'Rental', 'rent a car': 'Car Rental',
-        'lavanderia': 'Laundry', 'clinica': 'Clinic/Medical'
-    }
-
-    # Check for vendor in "Comercio:" field (BAC format)
-    # Handle multi-line vendor names by looking for the next field after Comercio
+    # --- Vendor Identification and Categorization (Database-based) ---
+    db = ExpenseDatabase()
+    # Try to extract vendor from "Comercio:" field (BAC format)
     comercio_match = re.search(r'Comercio:\s*([^\n]+?)(?=\n|$)', email_text, re.IGNORECASE)
     if comercio_match:
         comercio_name = comercio_match.group(1).strip()
         # Remove any currency amounts from the vendor name
         comercio_name = re.sub(r'\s*[\$₡€]?\s*\d{1,3}(?:,\d{3})*(?:\.\d{2})?\s*(?:USD|EUR|CRC)?\s*$', '', comercio_name, flags=re.IGNORECASE)
         comercio_name = re.sub(r'\s*(?:USD|EUR|CRC)\s+\d{1,3}(?:,\d{3})*(?:\.\d{2})?\s*$', '', comercio_name, flags=re.IGNORECASE)
-        expense_data['vendor'] = comercio_name.strip()
-        print(f"Debug: Found vendor in Comercio field: '{expense_data['vendor']}'")
+        vendor_name = comercio_name.strip()
+        print(f"Debug: Found vendor in Comercio field: '{vendor_name}'")
     else:
-        # Only check general vendor keywords if we didn't find a vendor in Comercio field
-        print("Debug: No Comercio field found, checking vendor keywords...")
-        for keyword, vendor_name in vendor_keywords.items():
-            if keyword in email_text_lower:
-                expense_data['vendor'] = vendor_name
-                print(f"Debug: Found vendor via keyword '{keyword}': '{vendor_name}'")
-                break
-        
-        if expense_data['vendor'] == 'Unknown':
-            print("Debug: No vendor keywords matched, vendor remains 'Unknown'")
+        # Fallback: search for vendor keyword in email text using database
+        print("Debug: No Comercio field found, searching vendor keywords in database...")
+        vendor_name = db.find_vendor_by_text(email_text)
+        if vendor_name:
+            print(f"Debug: Found vendor via database keyword: '{vendor_name}'")
+        else:
+            vendor_name = 'Unknown'
+            print("Debug: No vendor keywords matched in database, vendor remains 'Unknown'")
 
-    # --- Category Inference (Costa Rica Specific & General) ---
-    # This can be refined further with more specific keywords or logic
-    vendor_lower = expense_data['vendor'].lower()
-    print(f"Debug: Categorizing vendor '{expense_data['vendor']}' (lowercase: '{vendor_lower}')")
-    
-    # Convert all comparison lists to lowercase for case-insensitive matching
-    fast_food_vendors = ['kfc', 'kfc express', 'mcdonalds cr', 'burger king cr', 'pizza hut cr', 'dominos pizza cr', 'subway cr', 'taco bell cr']
-    grocery_vendors = ['automercado', 'mas x menos', 'maxi pali', 'pali', 'pricesmart', 'mega super', 'super compro', 'perimercados', 'walmart costa rica', 'pequeño mundo', 'vindi (convenience)', 'am pm (convenience)', 'fresh market (convenience)']
-    transport_vendors = ['uber', 'didi (transportation)', 'indrive (transportation)', 'ticoride', 'interbus (shuttle)', 'ride cr (transportation)', 'uber rides', 'dlc* uber rides']
-    dining_vendors = ['uber eats', 'dlc* uber eats', 'fiesta express delivery', 'rappi (delivery)', 'glovo (delivery)', 'soda (local restaurant)', 'pollo rostizado (food)', 'comidas el shaddai', 'coral ibm']
-    snack_vendors = ['pronto snack', 'delimart afz']
-    coffee_vendors = ['café britt', 'café del barista', 'cafeoteca', 'cafe britt', 'cafe del barista']
-    bank_vendors = ['bac credomatic', 'banco nacional', 'banco de costa rica (bcr)', 'banco popular', 'scotiabank cr', 'banco lafise', 'banco bct', 'banco improsa']
-    utility_vendors = ['ice (electricity/telecom)', 'aya (water)', 'kolbi (telecom)', 'claro (telecom)', 'movistar (telecom)', 'cnfl (electricity)', 'jasec (electricity/water)', 'coopeguanacaste (electricity)']
-    retail_vendors = ['el gallo mas gallo (electronics/home)', 'tienda el rey (variety store)', 'cemaco (home goods)', 'universal (department store/books)', 'siman (department store)']
-    
-    # Dining Out (restaurants, food delivery, fast food) - case-insensitive exact matches
-    if (vendor_lower in fast_food_vendors 
-        or vendor_lower in dining_vendors 
-        or vendor_lower in snack_vendors
-        or 'subway' in vendor_lower
-        or 'dlc* uber eats' in vendor_lower 
-        or 'uber eats' in vendor_lower 
-        or 'comidas el shaddai' in vendor_lower 
-        or 'coral ibm' in vendor_lower
-        or 'pronto snack' in vendor_lower
-        or 'restaurante' in vendor_lower
-        or 'soda' in vendor_lower):
-        expense_data['category'] = 'Dining Out'
-        print(f"Debug: Assigned category 'Dining Out' (restaurant/delivery vendor match)")
-    
-    # Groceries (groceries and supermarkets) - use partial matching for supermarkets (case-insensitive)
-    elif (vendor_lower in grocery_vendors
-          or 'auto mercado' in vendor_lower 
-          or 'automercado' in vendor_lower 
-          or 'mas x menos' in vendor_lower 
-          or 'maxi pali' in vendor_lower 
-          or ('pali' in vendor_lower and not any(x in vendor_lower for x in ['tpali', 'epali']))  # avoid false positives
-          or 'pricesmart' in vendor_lower 
-          or 'walmart' in vendor_lower 
-          or 'pequeño mundo' in vendor_lower 
-          or 'mega super' in vendor_lower
-          or 'super compro' in vendor_lower
-          or 'perimercados' in vendor_lower
-          or 'musi' in vendor_lower):  # Any vendor containing "MUSI" is groceries
-        expense_data['category'] = 'Groceries'
-        print(f"Debug: Assigned category 'Groceries' (grocery store match)")
-    
-    # Transportation - case-insensitive exact matches
-    elif (vendor_lower in transport_vendors 
-          or 'dlc* uber rides' in vendor_lower 
-          or 'uber rides' in vendor_lower):
-        expense_data['category'] = 'Transportation'
-        print(f"Debug: Assigned category 'Transportation' (lowercase exact match)")
-    
-    # Health/medical - case-insensitive exact matches
-    elif ('farmacia' in vendor_lower or 'medicamentos' in vendor_lower or 'clinica' in vendor_lower
-          or 'hospital' in vendor_lower or 'medico' in vendor_lower or 'doctor' in vendor_lower):
-        expense_data['category'] = 'Health/medical'
-        print(f"Debug: Assigned category 'Health/medical' (health vendor match)")
-    
-    # Home - case-insensitive exact matches  
-    elif (vendor_lower in retail_vendors
-          or 'ferreteria' in vendor_lower 
-          or 'cemaco' in vendor_lower
-          or 'el gallo mas gallo' in vendor_lower):
-        expense_data['category'] = 'Home'
-        print(f"Debug: Assigned category 'Home' (home/retail vendor match)")
-    
-    # Utilities - case-insensitive exact matches
-    elif (vendor_lower in utility_vendors
-          or 'ice electricidad' in vendor_lower or 'ice' in vendor_lower
-          or 'kolbi' in vendor_lower or 'claro' in vendor_lower or 'movistar' in vendor_lower
-          or 'aya agua' in vendor_lower or 'cnfl' in vendor_lower):
-        expense_data['category'] = 'Utilities'
-        print(f"Debug: Assigned category 'Utilities' (utility vendor match)")
-    
-    # Debt - banking related
-    elif vendor_lower in bank_vendors:
-        expense_data['category'] = 'Debt'
-        print(f"Debug: Assigned category 'Debt' (bank vendor match)")
-    
-    # Travel - case-insensitive exact matches
-    elif ('hotel' in vendor_lower or 'alojamiento' in vendor_lower
-          or 'tour' in vendor_lower or 'actividad' in vendor_lower or 'aventura' in vendor_lower
-          or 'rent a car' in vendor_lower or 'alquiler de vehiculos' in vendor_lower):
-        expense_data['category'] = 'Travel'
-        print(f"Debug: Assigned category 'Travel' (travel vendor match)")
-    
-    # Car maintenance - fuel and car related
-    elif ('gasolinera' in vendor_lower or 'gas station' in vendor_lower
-          or 'combustible' in vendor_lower or 'taller' in vendor_lower 
-          or 'mecanico' in vendor_lower or 'neumaticos' in vendor_lower):
-        expense_data['category'] = 'Car maintenance'
-        print(f"Debug: Assigned category 'Car maintenance' (car maintenance match)")
-    
-    # Personal - coffee, personal care
-    elif (vendor_lower in coffee_vendors
-          or 'cafe' in vendor_lower or 'café' in vendor_lower
-          or 'peluqueria' in vendor_lower or 'salon' in vendor_lower
-          or 'barberia' in vendor_lower):
-        expense_data['category'] = 'Personal'
-        print(f"Debug: Assigned category 'Personal' (personal care/coffee match)")
-    
-    # Parking - check for parquimetro pattern
-    elif ('parquimetro' in vendor_lower or 'parquímetro' in vendor_lower
-          or 'parqueo' in vendor_lower or 'parking' in vendor_lower):
-        expense_data['category'] = 'Transportation'  # Parking goes under Transportation
-        print(f"Debug: Assigned category 'Transportation' (parking match)")
-    
-    # Pets - pet related
-    elif ('mascotas' in vendor_lower or 'veterinaria' in vendor_lower 
-          or 'pet' in vendor_lower or 'animal' in vendor_lower):
-        expense_data['category'] = 'Pets'
-        print(f"Debug: Assigned category 'Pets' (pet vendor match)")
-    
-    # Streaming - entertainment services
-    elif ('netflix' in vendor_lower or 'spotify' in vendor_lower 
-          or 'amazon prime' in vendor_lower or 'disney' in vendor_lower
-          or 'streaming' in vendor_lower or 'google wm max llc' in vendor_lower):
-        expense_data['category'] = 'Streaming'
-        print(f"Debug: Assigned category 'Streaming' (streaming service match)")
-    
-    # Education - educational expenses
-    elif ('universidad' in vendor_lower or 'colegio' in vendor_lower 
-          or 'escuela' in vendor_lower or 'curso' in vendor_lower
-          or 'libro' in vendor_lower or 'libreria' in vendor_lower):
-        expense_data['category'] = 'Education'
-        print(f"Debug: Assigned category 'Education' (education vendor match)")
-    
-    # Gifts - gift related
-    elif ('regalo' in vendor_lower or 'gift' in vendor_lower 
-          or 'flores' in vendor_lower or 'floreria' in vendor_lower or 'joyeria' in vendor_lower):
-        expense_data['category'] = 'Gifts'
-        print(f"Debug: Assigned category 'Gifts' (gift vendor match)")
-    
-    # Default to Personal if no specific category matches
-    else:
-        expense_data['category'] = 'Personal'
-        print(f"Debug: Assigned default category 'Personal' (no specific match)")
+    expense_data['vendor'] = vendor_name
+
+    # --- Category Inference (Database-based) ---
+    category = db.categorize_vendor(vendor_name if vendor_name != 'Unknown' else email_text)
+    expense_data['category'] = category
+    print(f"Debug: Assigned category '{category}' using database rules")
 
     print(f"Debug: Final category assigned: '{expense_data['category']}'")
 

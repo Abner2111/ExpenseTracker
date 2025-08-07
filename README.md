@@ -232,8 +232,12 @@ ExpenseTracker/
 ├── src/
 │   ├── main.py           # Script principal con lógica de parsing avanzada
 │   ├── config.py         # Configuración (IDs, filtros, rutas)
+│   ├── database.py       # Módulo de base de datos SQLite
 │   ├── credentials.json  # Credenciales de Google (no incluido)
 │   └── token.pickle      # Token de acceso (generado automáticamente)
+├── migrate_data.py       # Script de migración de datos a SQLite
+├── admin_database.py     # Herramienta de administración de base de datos
+├── expense_tracker.db    # Base de datos SQLite (generada automáticamente)
 ├── test_*.py            # Scripts de prueba para validar funcionalidades
 ├── requirements.txt     # Dependencias de Python (actualizado)
 ├── .gitignore          # Archivos excluidos del control de versiones
@@ -241,29 +245,105 @@ ExpenseTracker/
 └── README.md           # Este archivo (documentación completa)
 ```
 
+## 💽 Base de Datos SQLite
+
+### Configuración Inicial
+
+1. **Migrar datos existentes** (solo necesario una vez):
+```bash
+python migrate_data.py
+```
+
+Esto crea la base de datos SQLite (`expense_tracker.db`) y migra:
+- 88+ palabras clave de vendedores costarricenses
+- 14 categorías de gastos
+- 116+ reglas de categorización con prioridades
+
+### Administración de la Base de Datos
+
+Use el script `admin_database.py` para gestionar la base de datos:
+
+#### Listar datos existentes:
+```bash
+# Ver todas las categorías
+python admin_database.py list-categories
+
+# Ver todas las palabras clave de vendedores
+python admin_database.py list-vendors
+
+# Ver todas las reglas de categorización
+python admin_database.py list-rules
+```
+
+#### Agregar nuevos datos:
+```bash
+# Agregar nuevo vendedor
+python admin_database.py add-vendor --keyword "nuevo_comercio" --vendor "Nuevo Comercio CR" --category "Personal"
+
+# Agregar nueva categoría
+python admin_database.py add-category --category "Cryptocurrency" --description "Bitcoin, crypto exchanges"
+
+# Agregar nueva regla de categorización
+python admin_database.py add-rule --rule-type "keyword_contains" --pattern "bitcoin" --category "Cryptocurrency" --priority 85
+```
+
+#### Probar categorización:
+```bash
+# Probar cómo se categorizaría un texto
+python admin_database.py test-vendor --text "DLC* UBER RIDES"
+python admin_database.py test-vendor --text "KFC EXPRESS"
+```
+
+#### Eliminar datos:
+```bash
+# Eliminar palabra clave de vendedor
+python admin_database.py delete-vendor --keyword "comercio_obsoleto"
+```
+
+### Tipos de Reglas de Categorización
+
+- **vendor_exact**: Coincidencia exacta con el nombre del vendedor
+- **vendor_contains**: El nombre del vendedor contiene el patrón
+- **keyword_contains**: El texto del email contiene el patrón
+
+Las reglas con mayor prioridad se evalúan primero.
+
+## 🔧 Personalización
+
 ## 🔧 Personalización
 
 ### Agregar Nuevos Comercios
 
-Para agregar reconocimiento de nuevos comercios, editar la sección `vendor_keywords` en `main.py`:
+Usar la herramienta de administración para agregar comercios:
 
-```python
-vendor_keywords = {
-    'nuevo_comercio': 'Nuevo Comercio CR',
-    'streaming_service': 'Netflix Costa Rica',
-    # ... otros comercios
-}
+```bash
+# Método recomendado: usar admin_database.py
+python admin_database.py add-vendor --keyword "nuevo_comercio" --vendor "Nuevo Comercio CR"
+
+# Agregar regla de categorización específica
+python admin_database.py add-rule --rule-type "vendor_exact" --pattern "nuevo comercio cr" --category "Personal" --priority 50
 ```
 
 ### Modificar Categorías
 
-Para cambiar la lógica de categorización, editar la sección de inferencia de categorías en `main.py`:
+Agregar nuevas categorías y reglas:
 
-```python
-# Ejemplo: Agregar nueva categoría para criptomonedas
-elif ('bitcoin' in vendor_lower or 'crypto' in vendor_lower):
-    expense_data['category'] = 'Cryptocurrency'
-    print(f"Debug: Assigned category 'Cryptocurrency' (crypto match)")
+```bash
+# Agregar nueva categoría
+python admin_database.py add-category --category "Cryptocurrency" --description "Bitcoin, crypto exchanges"
+
+# Agregar reglas para la nueva categoría
+python admin_database.py add-rule --rule-type "keyword_contains" --pattern "bitcoin" --category "Cryptocurrency" --priority 85
+python admin_database.py add-rule --rule-type "keyword_contains" --pattern "crypto" --category "Cryptocurrency" --priority 85
+```
+
+### Probar Cambios
+
+Antes de procesar emails reales, probar los cambios:
+
+```bash
+# Probar categorización de un texto específico
+python admin_database.py test-vendor --text "COINBASE PRO BTC"
 ```
 
 ### Agregar Nuevas Divisas
@@ -354,17 +434,18 @@ Debug: Assigned category 'Streaming' (streaming service match)
 
 ## ✨ Nuevas Características (Actualizaciones Recientes)
 
-### v2.0 - Sistema de Conversión de Divisas
-- ✅ Conversión automática USD/EUR → CRC
-- ✅ Tasas de cambio en tiempo real via API
-- ✅ Tasas de respaldo para offline
-- ✅ Documentación de conversiones en notas
+### v3.0 - Sistema de Base de Datos SQLite
+- ✅ Migración de vendedores y categorías a SQLite
+- ✅ Herramienta de administración sin código
+- ✅ Reglas de categorización con prioridades
+- ✅ Sistema de pruebas integrado
+- ✅ Gestión de datos más eficiente y mantenible
 
-### v2.1 - Mejoras en Parsing de Fechas
-- ✅ Soporte completo para meses en español
-- ✅ Manejo de abreviaciones (Ago → Agosto)
-- ✅ Múltiples formatos de fecha
-- ✅ Parsing robusto con fallbacks
+### v2.3 - Sistema de Testing
+- ✅ Scripts de prueba automatizados
+- ✅ Validación de todos los formatos de divisa
+- ✅ Tests de integración completa
+- ✅ Debugging mejorado con logs detallados
 
 ### v2.2 - Detección Avanzada de Comercios
 - ✅ Limpieza automática de nombres de comercios
@@ -372,11 +453,17 @@ Debug: Assigned category 'Streaming' (streaming service match)
 - ✅ Base de datos expandida de comercios CR
 - ✅ Categorización inteligente mejorada
 
-### v2.3 - Sistema de Testing
-- ✅ Scripts de prueba automatizados
-- ✅ Validación de todos los formatos de divisa
-- ✅ Tests de integración completa
-- ✅ Debugging mejorado con logs detallados
+### v2.1 - Mejoras en Parsing de Fechas
+- ✅ Soporte completo para meses en español
+- ✅ Manejo de abreviaciones (Ago → Agosto)
+- ✅ Múltiples formatos de fecha
+- ✅ Parsing robusto con fallbacks
+
+### v2.0 - Sistema de Conversión de Divisas
+- ✅ Conversión automática USD/EUR → CRC
+- ✅ Tasas de cambio en tiempo real via API
+- ✅ Tasas de respaldo para offline
+- ✅ Documentación de conversiones en notas
 
 ## 🔒 Seguridad
 
