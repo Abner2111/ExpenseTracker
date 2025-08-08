@@ -308,7 +308,7 @@ python admin_database.py delete-vendor --keyword "comercio_obsoleto"
 
 Las reglas con mayor prioridad se evalúan primero.
 
-## 🔧 Personalización
+
 
 ## 🔧 Personalización
 
@@ -529,12 +529,7 @@ Para preguntas o problemas:
 ## 🚀 Roadmap Futuro
 
 - [ ] Soporte para más bancos costarricenses (BCR, Banco Nacional)
-- [ ] Interface web para configuración visual
-- [ ] Reportes automáticos por email
-- [ ] Integración con apps de presupuesto
 - [ ] Machine Learning para categorización mejorada
-- [ ] Soporte para criptomonedas
-- [ ] API REST para integraciones externas
 
 ---
 
