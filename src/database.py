@@ -8,8 +8,14 @@ import os
 from typing import Dict, List, Tuple, Optional
 
 class ExpenseDatabase:
-    def __init__(self, db_path: str = 'expense_tracker.db'):
+    def __init__(self, db_path: str = None):
         """Initialize the database connection and create tables if they don't exist"""
+        if db_path is None:
+            # Default to data/expense_tracker.db relative to the project root
+            project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            db_path = os.path.join(project_root, 'data', 'expense_tracker.db')
+            # Create data directory if it doesn't exist
+            os.makedirs(os.path.dirname(db_path), exist_ok=True)
         self.db_path = db_path
         self.init_database()
     

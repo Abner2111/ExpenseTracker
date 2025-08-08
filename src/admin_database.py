@@ -8,10 +8,7 @@ import os
 import sys
 import argparse
 
-# Add src directory to path
-src_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'src')
-sys.path.append(src_path)
-
+# Import database module (now in same directory)
 from database import ExpenseDatabase
 
 def list_vendors(db):

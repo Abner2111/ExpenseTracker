@@ -7,8 +7,9 @@ from the hardcoded dictionaries in main.py
 import os
 import sys
 
-# Add src directory to path
-src_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'src')
+# Add src directory to path (go up one level from misc/ to project root, then to src/)
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+src_path = os.path.join(project_root, 'src')
 sys.path.append(src_path)
 
 from database import ExpenseDatabase

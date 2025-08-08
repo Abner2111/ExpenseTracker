@@ -7,8 +7,9 @@ import sys
 import os
 import re
 
-# Add the src directory to the path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+# Add the src directory to the path (go up one level from test/ to project root, then to src/)
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.join(project_root, 'src'))
 
 # Import the parsing function
 from main import parse_expense_from_email

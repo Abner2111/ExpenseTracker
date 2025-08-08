@@ -65,22 +65,22 @@ class ExpenseTracker:
             
             for email_data in emails:
                 try:
-                    logger.debug(f"Processing email {email_data.email_id}")
+                    logger.debug(f"Processing email {email_data.id}")
                     
                     # Parse expense from email
                     expense = self.expense_parser.parse_expense_from_email(
                         email_data.body, 
-                        email_data.email_id
+                        email_data.id
                     )
                     
                     expenses.append(expense)
                     logger.debug(f"Successfully parsed expense: {expense.vendor} - {expense.get_display_amount()}")
                     
                 except Exception as e:
-                    logger.error(f"Failed to parse expense from email {email_data.email_id}: {e}")
+                    logger.error(f"Failed to parse expense from email {email_data.id}: {e}")
                     results.append(ProcessingResult(
                         success=False,
-                        message=f"Failed to parse email {email_data.email_id}",
+                        message=f"Failed to parse email {email_data.id}",
                         error=str(e)
                     ))
             
@@ -103,9 +103,9 @@ class ExpenseTracker:
             logger.info("Step 4: Marking processed emails")
             for email_data in emails:
                 try:
-                    self.email_parser.mark_email_as_processed(email_data.email_id)
+                    self.email_parser.mark_email_as_processed(email_data.id)
                 except Exception as e:
-                    logger.warning(f"Failed to mark email {email_data.email_id} as processed: {e}")
+                    logger.warning(f"Failed to mark email {email_data.id} as processed: {e}")
             
             logger.info(f"Expense processing completed. Processed {len(results)} items")
             return results
@@ -188,13 +188,10 @@ class ExpenseTracker:
             }
             
             # Get database stats
-            all_vendors = self.db.get_all_vendors()
-            all_categories = self.db.get_all_categories()
-            
             db_stats = {
-                'vendors': len(all_vendors),
-                'categories': len(all_categories),
-                'total_rules': len(all_vendors)  # Each vendor entry is a rule
+                'vendors': len(self.db.get_all_vendors()),
+                'categories': len(self.db.get_all_categories()),
+                'total_rules': sum(len(vendors) for vendors in self.db.get_all_vendors().values())
             }
             
             # Get sheets info

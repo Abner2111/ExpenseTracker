@@ -1,0 +1,230 @@
+2025-08-07 20:18:45,072 - expense_tracker - INFO - main:218 - === ExpenseTracker Started ===
+2025-08-07 20:18:45,072 - expense_tracker - INFO - __init__:27 - Initializing ExpenseTracker
+2025-08-07 20:18:45,072 - expense_tracker - ERROR - __init__:39 - Failed to initialize ExpenseTracker: type object 'ConfigManager' has no attribute 'get_config'
+2025-08-07 20:18:45,072 - expense_tracker - ERROR - main:275 - Unexpected error in main: type object 'ConfigManager' has no attribute 'get_config'
+2025-08-07 20:20:14,951 - expense_tracker - INFO - main:218 - === ExpenseTracker Started ===
+2025-08-07 20:20:14,951 - expense_tracker - INFO - __init__:27 - Initializing ExpenseTracker
+2025-08-07 20:20:14,952 - expense_tracker - INFO - _authenticate:47 - Refreshing expired Google credentials
+2025-08-07 20:20:15,225 - expense_tracker - INFO - _authenticate:63 - Successfully authenticated with Gmail API
+2025-08-07 20:20:15,226 - expense_tracker - INFO - _initialize_credentials:36 - Initializing Google Sheets credentials
+2025-08-07 20:20:15,231 - expense_tracker - INFO - _initialize_credentials:71 - Google Sheets service initialized successfully
+2025-08-07 20:20:15,232 - expense_tracker - INFO - __init__:36 - ExpenseTracker initialized successfully
+2025-08-07 20:20:15,232 - expense_tracker - INFO - main:225 - Verifying system setup...
+2025-08-07 20:20:15,232 - expense_tracker - INFO - verify_setup:129 - Verifying ExpenseTracker setup
+2025-08-07 20:20:15,232 - expense_tracker - ERROR - verify_setup:168 - Setup verification failed: 'EmailParser' object has no attribute 'verify_gmail_access'
+2025-08-07 20:20:15,232 - expense_tracker - ERROR - main:229 - Setup verification failed: Setup verification failed
+2025-08-07 20:21:15,608 - expense_tracker - INFO - main:218 - === ExpenseTracker Started ===
+2025-08-07 20:21:15,609 - expense_tracker - INFO - __init__:27 - Initializing ExpenseTracker
+2025-08-07 20:21:15,613 - expense_tracker - INFO - _authenticate:80 - Successfully authenticated with Gmail API
+2025-08-07 20:21:15,614 - expense_tracker - INFO - _initialize_credentials:36 - Initializing Google Sheets credentials
+2025-08-07 20:21:15,617 - expense_tracker - INFO - _initialize_credentials:71 - Google Sheets service initialized successfully
+2025-08-07 20:21:15,618 - expense_tracker - INFO - __init__:36 - ExpenseTracker initialized successfully
+2025-08-07 20:21:15,618 - expense_tracker - INFO - main:225 - Verifying system setup...
+2025-08-07 20:21:15,618 - expense_tracker - INFO - verify_setup:129 - Verifying ExpenseTracker setup
+2025-08-07 20:21:15,618 - expense_tracker - INFO - verify_gmail_access:252 - Verifying Gmail API access
+2025-08-07 20:21:15,993 - expense_tracker - INFO - verify_gmail_access:259 - Gmail access verified for: abneraq73@gmail.com
+2025-08-07 20:21:15,993 - expense_tracker - INFO - verify_sheet_access:176 - Verifying Google Sheets access
+2025-08-07 20:21:17,223 - expense_tracker - INFO - verify_sheet_access:187 - Successfully accessed sheet: August 25 Monthly budget
+2025-08-07 20:21:17,939 - expense_tracker - INFO - verify_setup:154 - Setup verification successful - Gmail: OK, Sheets: OK, Database: 88 vendors, 14 categories
+2025-08-07 20:21:17,939 - expense_tracker - INFO - main:235 - ✅ Setup verification successful
+2025-08-07 20:21:17,939 - expense_tracker - INFO - main:239 - Starting expense processing...
+2025-08-07 20:21:17,939 - expense_tracker - INFO - process_expenses:49 - Starting expense processing workflow
+2025-08-07 20:21:17,939 - expense_tracker - INFO - process_expenses:54 - Step 1: Fetching emails from Gmail
+2025-08-07 20:21:17,939 - expense_tracker - INFO - get_bac_emails:97 - Fetching BAC Credomatic emails
+2025-08-07 20:21:17,939 - expense_tracker - INFO - get_bac_emails:105 - Filtering emails for month: 2025/08
+2025-08-07 20:21:18,130 - expense_tracker - INFO - get_bac_emails:115 - Found 0 unread BAC emails
+2025-08-07 20:21:18,130 - expense_tracker - INFO - process_expenses:56 - Found 0 emails to process
+2025-08-07 20:21:18,130 - expense_tracker - INFO - process_expenses:59 - No emails found to process
+2025-08-07 20:21:18,130 - expense_tracker - INFO - main:248 - Processing completed: 0 successful, 0 failed
+2025-08-07 20:21:18,131 - expense_tracker - ERROR - get_system_status:209 - Failed to get system status: 'list' object has no attribute 'values'
+2025-08-07 20:21:18,131 - expense_tracker - INFO - main:266 - === ExpenseTracker Completed ===
+2025-08-07 20:21:43,321 - expense_tracker - INFO - main:221 - === ExpenseTracker Started ===
+2025-08-07 20:21:43,321 - expense_tracker - INFO - __init__:27 - Initializing ExpenseTracker
+2025-08-07 20:21:43,324 - expense_tracker - INFO - _authenticate:80 - Successfully authenticated with Gmail API
+2025-08-07 20:21:43,325 - expense_tracker - INFO - _initialize_credentials:36 - Initializing Google Sheets credentials
+2025-08-07 20:21:43,329 - expense_tracker - INFO - _initialize_credentials:71 - Google Sheets service initialized successfully
+2025-08-07 20:21:43,329 - expense_tracker - INFO - __init__:36 - ExpenseTracker initialized successfully
+2025-08-07 20:21:43,330 - expense_tracker - INFO - main:228 - Verifying system setup...
+2025-08-07 20:21:43,330 - expense_tracker - INFO - verify_setup:129 - Verifying ExpenseTracker setup
+2025-08-07 20:21:43,330 - expense_tracker - INFO - verify_gmail_access:252 - Verifying Gmail API access
+2025-08-07 20:21:43,614 - expense_tracker - INFO - verify_gmail_access:259 - Gmail access verified for: abneraq73@gmail.com
+2025-08-07 20:21:43,614 - expense_tracker - INFO - verify_sheet_access:176 - Verifying Google Sheets access
+2025-08-07 20:21:44,516 - expense_tracker - INFO - verify_sheet_access:187 - Successfully accessed sheet: August 25 Monthly budget
+2025-08-07 20:21:45,139 - expense_tracker - INFO - verify_setup:154 - Setup verification successful - Gmail: OK, Sheets: OK, Database: 88 vendors, 14 categories
+2025-08-07 20:21:45,139 - expense_tracker - INFO - main:238 - ✅ Setup verification successful
+2025-08-07 20:21:45,140 - expense_tracker - INFO - main:242 - Starting expense processing...
+2025-08-07 20:21:45,140 - expense_tracker - INFO - process_expenses:49 - Starting expense processing workflow
+2025-08-07 20:21:45,140 - expense_tracker - INFO - process_expenses:54 - Step 1: Fetching emails from Gmail
+2025-08-07 20:21:45,140 - expense_tracker - INFO - get_bac_emails:97 - Fetching BAC Credomatic emails
+2025-08-07 20:21:45,140 - expense_tracker - INFO - get_bac_emails:105 - Filtering emails for month: 2025/08
+2025-08-07 20:21:45,297 - expense_tracker - INFO - get_bac_emails:115 - Found 0 unread BAC emails
+2025-08-07 20:21:45,297 - expense_tracker - INFO - process_expenses:56 - Found 0 emails to process
+2025-08-07 20:21:45,297 - expense_tracker - INFO - process_expenses:59 - No emails found to process
+2025-08-07 20:21:45,297 - expense_tracker - INFO - main:251 - Processing completed: 0 successful, 0 failed
+2025-08-07 20:21:45,837 - expense_tracker - INFO - main:269 - === ExpenseTracker Completed ===
+2025-08-07 20:23:43,489 - expense_tracker - INFO - main:221 - === ExpenseTracker Started ===
+2025-08-07 20:23:43,489 - expense_tracker - INFO - __init__:27 - Initializing ExpenseTracker
+2025-08-07 20:23:43,492 - expense_tracker - INFO - _authenticate:80 - Successfully authenticated with Gmail API
+2025-08-07 20:23:43,492 - expense_tracker - INFO - _initialize_credentials:36 - Initializing Google Sheets credentials
+2025-08-07 20:23:43,496 - expense_tracker - INFO - _initialize_credentials:71 - Google Sheets service initialized successfully
+2025-08-07 20:23:43,496 - expense_tracker - INFO - __init__:36 - ExpenseTracker initialized successfully
+2025-08-07 20:23:43,496 - expense_tracker - INFO - main:228 - Verifying system setup...
+2025-08-07 20:23:43,496 - expense_tracker - INFO - verify_setup:129 - Verifying ExpenseTracker setup
+2025-08-07 20:23:43,496 - expense_tracker - INFO - verify_gmail_access:252 - Verifying Gmail API access
+2025-08-07 20:23:43,803 - expense_tracker - INFO - verify_gmail_access:259 - Gmail access verified for: abneraq73@gmail.com
+2025-08-07 20:23:43,804 - expense_tracker - INFO - verify_sheet_access:176 - Verifying Google Sheets access
+2025-08-07 20:23:44,719 - expense_tracker - INFO - verify_sheet_access:187 - Successfully accessed sheet: August 25 Monthly budget
+2025-08-07 20:23:45,400 - expense_tracker - INFO - verify_setup:154 - Setup verification successful - Gmail: OK, Sheets: OK, Database: 88 vendors, 14 categories
+2025-08-07 20:23:45,400 - expense_tracker - INFO - main:238 - ✅ Setup verification successful
+2025-08-07 20:23:45,400 - expense_tracker - INFO - main:242 - Starting expense processing...
+2025-08-07 20:23:45,400 - expense_tracker - INFO - process_expenses:49 - Starting expense processing workflow
+2025-08-07 20:23:45,400 - expense_tracker - INFO - process_expenses:54 - Step 1: Fetching emails from Gmail
+2025-08-07 20:23:45,400 - expense_tracker - INFO - get_bac_emails:97 - Fetching BAC Credomatic emails
+2025-08-07 20:23:45,400 - expense_tracker - INFO - get_bac_emails:105 - Filtering emails for month: 2025/08
+2025-08-07 20:23:45,596 - expense_tracker - INFO - get_bac_emails:115 - Found 0 unread BAC emails
+2025-08-07 20:23:45,596 - expense_tracker - INFO - process_expenses:56 - Found 0 emails to process
+2025-08-07 20:23:45,596 - expense_tracker - INFO - process_expenses:59 - No emails found to process
+2025-08-07 20:23:45,597 - expense_tracker - INFO - main:251 - Processing completed: 0 successful, 0 failed
+2025-08-07 20:23:46,098 - expense_tracker - INFO - main:269 - === ExpenseTracker Completed ===
+2025-08-07 20:24:44,249 - expense_tracker - INFO - main:221 - === ExpenseTracker Started ===
+2025-08-07 20:24:44,249 - expense_tracker - INFO - __init__:27 - Initializing ExpenseTracker
+2025-08-07 20:24:44,251 - expense_tracker - INFO - _authenticate:80 - Successfully authenticated with Gmail API
+2025-08-07 20:24:44,252 - expense_tracker - INFO - _initialize_credentials:36 - Initializing Google Sheets credentials
+2025-08-07 20:24:44,256 - expense_tracker - INFO - _initialize_credentials:71 - Google Sheets service initialized successfully
+2025-08-07 20:24:44,257 - expense_tracker - INFO - __init__:36 - ExpenseTracker initialized successfully
+2025-08-07 20:24:44,257 - expense_tracker - INFO - main:228 - Verifying system setup...
+2025-08-07 20:24:44,257 - expense_tracker - INFO - verify_setup:129 - Verifying ExpenseTracker setup
+2025-08-07 20:24:44,257 - expense_tracker - INFO - verify_gmail_access:252 - Verifying Gmail API access
+2025-08-07 20:24:44,555 - expense_tracker - INFO - verify_gmail_access:259 - Gmail access verified for: abneraq73@gmail.com
+2025-08-07 20:24:44,556 - expense_tracker - INFO - verify_sheet_access:176 - Verifying Google Sheets access
+2025-08-07 20:24:45,599 - expense_tracker - INFO - verify_sheet_access:187 - Successfully accessed sheet: August 25 Monthly budget
+2025-08-07 20:24:46,253 - expense_tracker - INFO - verify_setup:154 - Setup verification successful - Gmail: OK, Sheets: OK, Database: 88 vendors, 14 categories
+2025-08-07 20:24:46,253 - expense_tracker - INFO - main:238 - ✅ Setup verification successful
+2025-08-07 20:24:46,253 - expense_tracker - INFO - main:242 - Starting expense processing...
+2025-08-07 20:24:46,253 - expense_tracker - INFO - process_expenses:49 - Starting expense processing workflow
+2025-08-07 20:24:46,253 - expense_tracker - INFO - process_expenses:54 - Step 1: Fetching emails from Gmail
+2025-08-07 20:24:46,253 - expense_tracker - INFO - get_bac_emails:97 - Fetching BAC Credomatic emails
+2025-08-07 20:24:46,253 - expense_tracker - INFO - get_bac_emails:105 - Filtering emails for month: 2025/08
+2025-08-07 20:24:46,423 - expense_tracker - INFO - get_bac_emails:115 - Found 0 unread BAC emails
+2025-08-07 20:24:46,423 - expense_tracker - INFO - process_expenses:56 - Found 0 emails to process
+2025-08-07 20:24:46,423 - expense_tracker - INFO - process_expenses:59 - No emails found to process
+2025-08-07 20:24:46,423 - expense_tracker - INFO - main:251 - Processing completed: 0 successful, 0 failed
+2025-08-07 20:24:46,843 - expense_tracker - INFO - main:269 - === ExpenseTracker Completed ===
+2025-08-07 20:25:30,801 - expense_tracker - INFO - main:221 - === ExpenseTracker Started ===
+2025-08-07 20:25:30,801 - expense_tracker - INFO - __init__:27 - Initializing ExpenseTracker
+2025-08-07 20:25:30,804 - expense_tracker - INFO - _authenticate:80 - Successfully authenticated with Gmail API
+2025-08-07 20:25:30,804 - expense_tracker - INFO - _initialize_credentials:36 - Initializing Google Sheets credentials
+2025-08-07 20:25:30,808 - expense_tracker - INFO - _initialize_credentials:71 - Google Sheets service initialized successfully
+2025-08-07 20:25:30,809 - expense_tracker - INFO - __init__:36 - ExpenseTracker initialized successfully
+2025-08-07 20:25:30,809 - expense_tracker - INFO - main:228 - Verifying system setup...
+2025-08-07 20:25:30,809 - expense_tracker - INFO - verify_setup:129 - Verifying ExpenseTracker setup
+2025-08-07 20:25:30,809 - expense_tracker - INFO - verify_gmail_access:252 - Verifying Gmail API access
+2025-08-07 20:25:31,126 - expense_tracker - INFO - verify_gmail_access:259 - Gmail access verified for: abneraq73@gmail.com
+2025-08-07 20:25:31,127 - expense_tracker - INFO - verify_sheet_access:176 - Verifying Google Sheets access
+2025-08-07 20:25:32,251 - expense_tracker - INFO - verify_sheet_access:187 - Successfully accessed sheet: August 25 Monthly budget
+2025-08-07 20:25:32,910 - expense_tracker - INFO - verify_setup:154 - Setup verification successful - Gmail: OK, Sheets: OK, Database: 88 vendors, 14 categories
+2025-08-07 20:25:32,910 - expense_tracker - INFO - main:238 - ✅ Setup verification successful
+2025-08-07 20:25:32,910 - expense_tracker - INFO - main:242 - Starting expense processing...
+2025-08-07 20:25:32,910 - expense_tracker - INFO - process_expenses:49 - Starting expense processing workflow
+2025-08-07 20:25:32,910 - expense_tracker - INFO - process_expenses:54 - Step 1: Fetching emails from Gmail
+2025-08-07 20:25:32,910 - expense_tracker - INFO - get_bac_emails:97 - Fetching BAC Credomatic emails
+2025-08-07 20:25:32,910 - expense_tracker - INFO - get_bac_emails:105 - Filtering emails for month: 2025/08
+2025-08-07 20:25:33,082 - expense_tracker - INFO - get_bac_emails:115 - Found 0 unread BAC emails
+2025-08-07 20:25:33,082 - expense_tracker - INFO - process_expenses:56 - Found 0 emails to process
+2025-08-07 20:25:33,083 - expense_tracker - INFO - process_expenses:59 - No emails found to process
+2025-08-07 20:25:33,083 - expense_tracker - INFO - main:251 - Processing completed: 0 successful, 0 failed
+2025-08-07 20:25:33,535 - expense_tracker - INFO - main:269 - === ExpenseTracker Completed ===
+2025-08-07 20:26:36,973 - expense_tracker - INFO - main:221 - === ExpenseTracker Started ===
+2025-08-07 20:26:36,973 - expense_tracker - INFO - __init__:27 - Initializing ExpenseTracker
+2025-08-07 20:26:36,976 - expense_tracker - INFO - _authenticate:80 - Successfully authenticated with Gmail API
+2025-08-07 20:26:36,977 - expense_tracker - INFO - _initialize_credentials:36 - Initializing Google Sheets credentials
+2025-08-07 20:26:36,980 - expense_tracker - INFO - _initialize_credentials:71 - Google Sheets service initialized successfully
+2025-08-07 20:26:36,981 - expense_tracker - INFO - __init__:36 - ExpenseTracker initialized successfully
+2025-08-07 20:26:36,981 - expense_tracker - INFO - main:228 - Verifying system setup...
+2025-08-07 20:26:36,981 - expense_tracker - INFO - verify_setup:129 - Verifying ExpenseTracker setup
+2025-08-07 20:26:36,981 - expense_tracker - INFO - verify_gmail_access:269 - Verifying Gmail API access
+2025-08-07 20:26:37,265 - expense_tracker - INFO - verify_gmail_access:276 - Gmail access verified for: abneraq73@gmail.com
+2025-08-07 20:26:37,265 - expense_tracker - INFO - verify_sheet_access:176 - Verifying Google Sheets access
+2025-08-07 20:26:38,402 - expense_tracker - INFO - verify_sheet_access:187 - Successfully accessed sheet: August 25 Monthly budget
+2025-08-07 20:26:39,068 - expense_tracker - INFO - verify_setup:154 - Setup verification successful - Gmail: OK, Sheets: OK, Database: 88 vendors, 14 categories
+2025-08-07 20:26:39,068 - expense_tracker - INFO - main:238 - ✅ Setup verification successful
+2025-08-07 20:26:39,068 - expense_tracker - INFO - main:242 - Starting expense processing...
+2025-08-07 20:26:39,069 - expense_tracker - INFO - process_expenses:49 - Starting expense processing workflow
+2025-08-07 20:26:39,069 - expense_tracker - INFO - process_expenses:54 - Step 1: Fetching emails from Gmail
+2025-08-07 20:26:39,069 - expense_tracker - INFO - get_bac_emails:97 - Fetching BAC Credomatic emails
+2025-08-07 20:26:39,069 - expense_tracker - INFO - get_bac_emails:118 - Filtering emails for month: 2025/08
+2025-08-07 20:26:39,328 - expense_tracker - INFO - get_bac_emails:132 - Found 1 unread BAC emails
+2025-08-07 20:26:39,505 - expense_tracker - INFO - get_bac_emails:148 - Successfully retrieved 1 emails
+2025-08-07 20:26:39,505 - expense_tracker - INFO - process_expenses:56 - Found 1 emails to process
+2025-08-07 20:26:39,505 - expense_tracker - INFO - process_expenses:63 - Step 2: Processing emails and extracting expenses
+2025-08-07 20:26:39,505 - expense_tracker - ERROR - process_expenses:114 - Expense processing workflow failed: 'EmailData' object has no attribute 'id'
+2025-08-07 20:26:39,505 - expense_tracker - INFO - main:251 - Processing completed: 0 successful, 1 failed
+2025-08-07 20:26:40,014 - expense_tracker - INFO - main:269 - === ExpenseTracker Completed ===
+2025-08-07 20:27:24,952 - expense_tracker - INFO - main:221 - === ExpenseTracker Started ===
+2025-08-07 20:27:24,952 - expense_tracker - INFO - __init__:27 - Initializing ExpenseTracker
+2025-08-07 20:27:24,955 - expense_tracker - INFO - _authenticate:80 - Successfully authenticated with Gmail API
+2025-08-07 20:27:24,956 - expense_tracker - INFO - _initialize_credentials:36 - Initializing Google Sheets credentials
+2025-08-07 20:27:24,960 - expense_tracker - INFO - _initialize_credentials:71 - Google Sheets service initialized successfully
+2025-08-07 20:27:24,960 - expense_tracker - INFO - __init__:36 - ExpenseTracker initialized successfully
+2025-08-07 20:27:24,960 - expense_tracker - INFO - main:228 - Verifying system setup...
+2025-08-07 20:27:24,960 - expense_tracker - INFO - verify_setup:129 - Verifying ExpenseTracker setup
+2025-08-07 20:27:24,960 - expense_tracker - INFO - verify_gmail_access:269 - Verifying Gmail API access
+2025-08-07 20:27:25,262 - expense_tracker - INFO - verify_gmail_access:276 - Gmail access verified for: abneraq73@gmail.com
+2025-08-07 20:27:25,262 - expense_tracker - INFO - verify_sheet_access:176 - Verifying Google Sheets access
+2025-08-07 20:27:26,406 - expense_tracker - INFO - verify_sheet_access:187 - Successfully accessed sheet: August 25 Monthly budget
+2025-08-07 20:27:26,933 - expense_tracker - INFO - verify_setup:154 - Setup verification successful - Gmail: OK, Sheets: OK, Database: 88 vendors, 14 categories
+2025-08-07 20:27:26,933 - expense_tracker - INFO - main:238 - ✅ Setup verification successful
+2025-08-07 20:27:26,933 - expense_tracker - INFO - main:242 - Starting expense processing...
+2025-08-07 20:27:26,933 - expense_tracker - INFO - process_expenses:49 - Starting expense processing workflow
+2025-08-07 20:27:26,933 - expense_tracker - INFO - process_expenses:54 - Step 1: Fetching emails from Gmail
+2025-08-07 20:27:26,933 - expense_tracker - INFO - get_bac_emails:97 - Fetching BAC Credomatic emails
+2025-08-07 20:27:26,933 - expense_tracker - INFO - get_bac_emails:118 - Filtering emails for month: 2025/08
+2025-08-07 20:27:27,114 - expense_tracker - INFO - get_bac_emails:132 - Found 1 unread BAC emails
+2025-08-07 20:27:27,265 - expense_tracker - INFO - get_bac_emails:148 - Successfully retrieved 1 emails
+2025-08-07 20:27:27,265 - expense_tracker - INFO - process_expenses:56 - Found 1 emails to process
+2025-08-07 20:27:27,265 - expense_tracker - INFO - process_expenses:63 - Step 2: Processing emails and extracting expenses
+2025-08-07 20:27:27,265 - expense_tracker - INFO - parse_expense_from_email:62 - Parsing expense from email 198871533bf56334
+2025-08-07 20:27:27,268 - expense_tracker - INFO - parse_date_from_email:94 - Final parsed date: 2025-08-07
+2025-08-07 20:27:27,269 - expense_tracker - INFO - parse_expense_from_email:95 - Successfully parsed expense: MEGA SUPER AGUA CALIEN - ₡6,700.00 - Groceries
+2025-08-07 20:27:27,269 - expense_tracker - INFO - process_expenses:87 - Successfully parsed 1 expenses
+2025-08-07 20:27:27,269 - expense_tracker - INFO - process_expenses:91 - Step 3: Adding expenses to Google Sheets
+2025-08-07 20:27:27,270 - expense_tracker - INFO - add_expense_to_sheet:87 - Adding expense to sheet: MEGA SUPER AGUA CALIEN - ₡6,700.00
+2025-08-07 20:27:27,746 - expense_tracker - INFO - add_expense_to_sheet:119 - Successfully added expense to sheet. Range: Transactions!B43:G43, Rows: 1
+2025-08-07 20:27:27,746 - expense_tracker - INFO - process_expenses:103 - Step 4: Marking processed emails
+2025-08-07 20:27:28,015 - expense_tracker - INFO - process_expenses:110 - Expense processing completed. Processed 1 items
+2025-08-07 20:27:28,015 - expense_tracker - INFO - main:251 - Processing completed: 1 successful, 0 failed
+2025-08-07 20:27:28,904 - expense_tracker - INFO - main:269 - === ExpenseTracker Completed ===
+2025-08-07 20:30:03,861 - expense_tracker - INFO - main:221 - === ExpenseTracker Started ===
+2025-08-07 20:30:03,862 - expense_tracker - INFO - __init__:27 - Initializing ExpenseTracker
+2025-08-07 20:30:03,865 - expense_tracker - INFO - _authenticate:80 - Successfully authenticated with Gmail API
+2025-08-07 20:30:03,865 - expense_tracker - INFO - _initialize_credentials:36 - Initializing Google Sheets credentials
+2025-08-07 20:30:03,869 - expense_tracker - INFO - _initialize_credentials:71 - Google Sheets service initialized successfully
+2025-08-07 20:30:03,869 - expense_tracker - INFO - __init__:36 - ExpenseTracker initialized successfully
+2025-08-07 20:30:03,869 - expense_tracker - INFO - main:228 - Verifying system setup...
+2025-08-07 20:30:03,870 - expense_tracker - INFO - verify_setup:129 - Verifying ExpenseTracker setup
+2025-08-07 20:30:03,870 - expense_tracker - INFO - verify_gmail_access:269 - Verifying Gmail API access
+2025-08-07 20:30:04,174 - expense_tracker - INFO - verify_gmail_access:276 - Gmail access verified for: abneraq73@gmail.com
+2025-08-07 20:30:04,175 - expense_tracker - INFO - verify_sheet_access:175 - Verifying Google Sheets access
+2025-08-07 20:30:05,114 - expense_tracker - INFO - verify_sheet_access:186 - Successfully accessed sheet: August 25 Monthly budget
+2025-08-07 20:30:05,806 - expense_tracker - INFO - verify_setup:154 - Setup verification successful - Gmail: OK, Sheets: OK, Database: 88 vendors, 14 categories
+2025-08-07 20:30:05,806 - expense_tracker - INFO - main:238 - ✅ Setup verification successful
+2025-08-07 20:30:05,806 - expense_tracker - INFO - main:242 - Starting expense processing...
+2025-08-07 20:30:05,806 - expense_tracker - INFO - process_expenses:49 - Starting expense processing workflow
+2025-08-07 20:30:05,806 - expense_tracker - INFO - process_expenses:54 - Step 1: Fetching emails from Gmail
+2025-08-07 20:30:05,806 - expense_tracker - INFO - get_bac_emails:97 - Fetching BAC Credomatic emails
+2025-08-07 20:30:05,807 - expense_tracker - INFO - get_bac_emails:118 - Filtering emails for month: 2025/08
+2025-08-07 20:30:05,975 - expense_tracker - INFO - get_bac_emails:132 - Found 1 unread BAC emails
+2025-08-07 20:30:06,148 - expense_tracker - INFO - get_bac_emails:148 - Successfully retrieved 1 emails
+2025-08-07 20:30:06,148 - expense_tracker - INFO - process_expenses:56 - Found 1 emails to process
+2025-08-07 20:30:06,148 - expense_tracker - INFO - process_expenses:63 - Step 2: Processing emails and extracting expenses
+2025-08-07 20:30:06,148 - expense_tracker - INFO - parse_expense_from_email:62 - Parsing expense from email 198871533bf56334
+2025-08-07 20:30:06,150 - expense_tracker - INFO - parse_date_from_email:94 - Final parsed date: 2025-08-07
+2025-08-07 20:30:06,151 - expense_tracker - INFO - parse_expense_from_email:95 - Successfully parsed expense: MEGA SUPER AGUA CALIEN - ₡6,700.00 - Groceries
+2025-08-07 20:30:06,151 - expense_tracker - INFO - process_expenses:87 - Successfully parsed 1 expenses
+2025-08-07 20:30:06,151 - expense_tracker - INFO - process_expenses:91 - Step 3: Adding expenses to Google Sheets
+2025-08-07 20:30:06,152 - expense_tracker - INFO - add_expense_to_sheet:87 - Adding expense to sheet: MEGA SUPER AGUA CALIEN - ₡6,700.00
+2025-08-07 20:30:06,583 - expense_tracker - INFO - add_expense_to_sheet:119 - Successfully added expense to sheet. Range: Transactions!B43:E43, Rows: 1
+2025-08-07 20:30:06,583 - expense_tracker - INFO - process_expenses:103 - Step 4: Marking processed emails
+2025-08-07 20:30:06,803 - expense_tracker - INFO - process_expenses:110 - Expense processing completed. Processed 1 items
+2025-08-07 20:30:06,803 - expense_tracker - INFO - main:251 - Processing completed: 1 successful, 0 failed
+2025-08-07 20:30:07,316 - expense_tracker - INFO - main:269 - === ExpenseTracker Completed ===

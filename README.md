@@ -229,20 +229,27 @@ Resultado:
 
 ```
 ExpenseTracker/
-├── src/
-│   ├── main.py           # Script principal con lógica de parsing avanzada
-│   ├── config.py         # Configuración (IDs, filtros, rutas)
-│   ├── database.py       # Módulo de base de datos SQLite
-│   ├── credentials.json  # Credenciales de Google (no incluido)
-│   └── token.pickle      # Token de acceso (generado automáticamente)
-├── migrate_data.py       # Script de migración de datos a SQLite
-├── admin_database.py     # Herramienta de administración de base de datos
-├── expense_tracker.db    # Base de datos SQLite (generada automáticamente)
-├── test_*.py            # Scripts de prueba para validar funcionalidades
-├── requirements.txt     # Dependencias de Python (actualizado)
-├── .gitignore          # Archivos excluidos del control de versiones
-├── LICENSE             # Licencia MIT
-└── README.md           # Este archivo (documentación completa)
+├── src/                          # Código fuente principal
+│   ├── main.py                   # Script principal con lógica de parsing avanzada
+│   ├── config.py                 # Configuración (IDs, filtros, rutas)
+│   ├── database.py               # Módulo de base de datos SQLite
+│   ├── admin_database.py         # Herramienta de administración de base de datos
+│   ├── credentials.json          # Credenciales de Google (no incluido)
+│   └── token.pickle              # Token de acceso (generado automáticamente)
+├── data/                         # Directorio de datos
+│   └── expense_tracker.db        # Base de datos SQLite
+├── test/                         # Scripts de prueba
+│   ├── test_categories.py        # Pruebas de categorización
+│   ├── test_currency_*.py        # Pruebas de conversión de moneda
+│   ├── test_final_integration.py # Pruebas de integración completa
+│   └── ...                       # Otros archivos de prueba
+├── misc/                         # Scripts misceláneos y utilidades
+│   ├── migrate_data.py           # Script de migración de datos a SQLite
+│   └── debug_date_parsing.py     # Herramienta de debugging para fechas
+├── requirements.txt              # Dependencias de Python
+├── .gitignore                   # Archivos excluidos del control de versiones
+├── LICENSE                      # Licencia MIT
+└── README.md                    # Este archivo (documentación completa)
 ```
 
 ## 💽 Base de Datos SQLite
@@ -251,7 +258,7 @@ ExpenseTracker/
 
 1. **Migrar datos existentes** (solo necesario una vez):
 ```bash
-python migrate_data.py
+python misc/migrate_data.py
 ```
 
 Esto crea la base de datos SQLite (`expense_tracker.db`) y migra:
@@ -266,38 +273,38 @@ Use el script `admin_database.py` para gestionar la base de datos:
 #### Listar datos existentes:
 ```bash
 # Ver todas las categorías
-python admin_database.py list-categories
+python src/admin_database.py list-categories
 
 # Ver todas las palabras clave de vendedores
-python admin_database.py list-vendors
+python src/admin_database.py list-vendors
 
 # Ver todas las reglas de categorización
-python admin_database.py list-rules
+python src/admin_database.py list-rules
 ```
 
 #### Agregar nuevos datos:
 ```bash
 # Agregar nuevo vendedor
-python admin_database.py add-vendor --keyword "nuevo_comercio" --vendor "Nuevo Comercio CR" --category "Personal"
+python src/admin_database.py add-vendor --keyword "nuevo_comercio" --vendor "Nuevo Comercio CR" --category "Personal"
 
 # Agregar nueva categoría
-python admin_database.py add-category --category "Cryptocurrency" --description "Bitcoin, crypto exchanges"
+python src/admin_database.py add-category --category "Cryptocurrency" --description "Bitcoin, crypto exchanges"
 
 # Agregar nueva regla de categorización
-python admin_database.py add-rule --rule-type "keyword_contains" --pattern "bitcoin" --category "Cryptocurrency" --priority 85
+python src/admin_database.py add-rule --rule-type "keyword_contains" --pattern "bitcoin" --category "Cryptocurrency" --priority 85
 ```
 
 #### Probar categorización:
 ```bash
 # Probar cómo se categorizaría un texto
-python admin_database.py test-vendor --text "DLC* UBER RIDES"
-python admin_database.py test-vendor --text "KFC EXPRESS"
+python src/admin_database.py test-vendor --text "DLC* UBER RIDES"
+python src/admin_database.py test-vendor --text "KFC EXPRESS"
 ```
 
 #### Eliminar datos:
 ```bash
 # Eliminar palabra clave de vendedor
-python admin_database.py delete-vendor --keyword "comercio_obsoleto"
+python src/admin_database.py delete-vendor --keyword "comercio_obsoleto"
 ```
 
 ### Tipos de Reglas de Categorización
@@ -317,11 +324,11 @@ Las reglas con mayor prioridad se evalúan primero.
 Usar la herramienta de administración para agregar comercios:
 
 ```bash
-# Método recomendado: usar admin_database.py
-python admin_database.py add-vendor --keyword "nuevo_comercio" --vendor "Nuevo Comercio CR"
+# Método recomendado: usar src/admin_database.py
+python src/admin_database.py add-vendor --keyword "nuevo_comercio" --vendor "Nuevo Comercio CR"
 
 # Agregar regla de categorización específica
-python admin_database.py add-rule --rule-type "vendor_exact" --pattern "nuevo comercio cr" --category "Personal" --priority 50
+python src/admin_database.py add-rule --rule-type "vendor_exact" --pattern "nuevo comercio cr" --category "Personal" --priority 50
 ```
 
 ### Modificar Categorías
@@ -330,11 +337,11 @@ Agregar nuevas categorías y reglas:
 
 ```bash
 # Agregar nueva categoría
-python admin_database.py add-category --category "Cryptocurrency" --description "Bitcoin, crypto exchanges"
+python src/admin_database.py add-category --category "Cryptocurrency" --description "Bitcoin, crypto exchanges"
 
 # Agregar reglas para la nueva categoría
-python admin_database.py add-rule --rule-type "keyword_contains" --pattern "bitcoin" --category "Cryptocurrency" --priority 85
-python admin_database.py add-rule --rule-type "keyword_contains" --pattern "crypto" --category "Cryptocurrency" --priority 85
+python src/admin_database.py add-rule --rule-type "keyword_contains" --pattern "bitcoin" --category "Cryptocurrency" --priority 85
+python src/admin_database.py add-rule --rule-type "keyword_contains" --pattern "crypto" --category "Cryptocurrency" --priority 85
 ```
 
 ### Probar Cambios
@@ -343,7 +350,7 @@ Antes de procesar emails reales, probar los cambios:
 
 ```bash
 # Probar categorización de un texto específico
-python admin_database.py test-vendor --text "COINBASE PRO BTC"
+python src/admin_database.py test-vendor --text "COINBASE PRO BTC"
 ```
 
 ### Agregar Nuevas Divisas
