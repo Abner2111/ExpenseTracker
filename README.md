@@ -6,7 +6,7 @@ Un sistema automatizado avanzado para extraer datos de gastos de los correos de 
 
 - ✅ **Extracción automática** de correos de notificación de BAC Credomatic
 - 🏪 **Detección inteligente de comercios** con base de datos extensa de vendedores costarricenses
-- 📋 **Categorización automática** usando 15+ categorías personalizadas
+- 📋 **Categorización automática** usando  categorías personalizadas
 - � **Conversión automática de divisas** (USD, EUR → CRC) con tasas de cambio en tiempo real
 - 🌍 **Soporte multi-moneda** con detección automática de símbolos y códigos de divisa
 - 📅 **Análisis de fechas en español** con soporte para abreviaciones como "Ago" (Agosto)
