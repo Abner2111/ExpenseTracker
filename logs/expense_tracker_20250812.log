@@ -1,0 +1,86 @@
+2025-08-12 13:24:10,570 - expense_tracker - INFO - main:221 - === ExpenseTracker Started ===
+2025-08-12 13:24:10,570 - expense_tracker - INFO - __init__:27 - Initializing ExpenseTracker
+2025-08-12 13:24:10,571 - expense_tracker - INFO - _authenticate:64 - Refreshing expired Google credentials
+2025-08-12 13:24:10,830 - expense_tracker - INFO - _authenticate:80 - Successfully authenticated with Gmail API
+2025-08-12 13:24:10,831 - expense_tracker - INFO - _initialize_credentials:36 - Initializing Google Sheets credentials
+2025-08-12 13:24:10,841 - expense_tracker - INFO - _initialize_credentials:71 - Google Sheets service initialized successfully
+2025-08-12 13:24:10,842 - expense_tracker - INFO - __init__:36 - ExpenseTracker initialized successfully
+2025-08-12 13:24:10,844 - expense_tracker - INFO - main:228 - Verifying system setup...
+2025-08-12 13:24:10,844 - expense_tracker - INFO - verify_setup:129 - Verifying ExpenseTracker setup
+2025-08-12 13:24:10,844 - expense_tracker - INFO - verify_gmail_access:269 - Verifying Gmail API access
+2025-08-12 13:24:11,165 - expense_tracker - INFO - verify_gmail_access:276 - Gmail access verified for: abneraq73@gmail.com
+2025-08-12 13:24:11,165 - expense_tracker - INFO - verify_sheet_access:175 - Verifying Google Sheets access
+2025-08-12 13:24:12,478 - expense_tracker - INFO - verify_sheet_access:186 - Successfully accessed sheet: August 25 Monthly budget
+2025-08-12 13:24:12,916 - expense_tracker - INFO - verify_setup:154 - Setup verification successful - Gmail: OK, Sheets: OK, Database: 88 vendors, 14 categories
+2025-08-12 13:24:12,916 - expense_tracker - INFO - main:238 - ✅ Setup verification successful
+2025-08-12 13:24:12,916 - expense_tracker - INFO - main:242 - Starting expense processing...
+2025-08-12 13:24:12,916 - expense_tracker - INFO - process_expenses:49 - Starting expense processing workflow
+2025-08-12 13:24:12,916 - expense_tracker - INFO - process_expenses:54 - Step 1: Fetching emails from Gmail
+2025-08-12 13:24:12,916 - expense_tracker - INFO - get_bac_emails:97 - Fetching BAC Credomatic emails
+2025-08-12 13:24:12,916 - expense_tracker - INFO - get_bac_emails:118 - Filtering emails for month: 2025/08
+2025-08-12 13:24:13,118 - expense_tracker - INFO - get_bac_emails:132 - Found 10 unread BAC emails
+2025-08-12 13:24:14,723 - expense_tracker - INFO - get_bac_emails:148 - Successfully retrieved 10 emails
+2025-08-12 13:24:14,723 - expense_tracker - INFO - process_expenses:56 - Found 10 emails to process
+2025-08-12 13:24:14,724 - expense_tracker - INFO - process_expenses:63 - Step 2: Processing emails and extracting expenses
+2025-08-12 13:24:14,724 - expense_tracker - INFO - parse_expense_from_email:62 - Parsing expense from email 1989a60578f56cba
+2025-08-12 13:24:14,731 - expense_tracker - INFO - parse_date_from_email:94 - Final parsed date: 2025-08-11
+2025-08-12 13:24:14,733 - expense_tracker - INFO - parse_expense_from_email:95 - Successfully parsed expense: CORAL IBM - ₡950.00 - Dining Out
+2025-08-12 13:24:14,733 - expense_tracker - INFO - parse_expense_from_email:62 - Parsing expense from email 198998c1719fc449
+2025-08-12 13:24:14,733 - expense_tracker - INFO - parse_date_from_email:94 - Final parsed date: 2025-08-11
+2025-08-12 13:24:14,733 - expense_tracker - INFO - parse_expense_from_email:95 - Successfully parsed expense: DELIMART AFZ - ₡1,650.00 - Personal
+2025-08-12 13:24:14,733 - expense_tracker - INFO - parse_expense_from_email:62 - Parsing expense from email 19896c20363a7f1d
+2025-08-12 13:24:14,734 - expense_tracker - INFO - parse_date_from_email:94 - Final parsed date: 2025-08-10
+2025-08-12 13:24:14,734 - expense_tracker - INFO - parse_expense_from_email:95 - Successfully parsed expense: ALESTE - ₡2,000.00 - Personal
+2025-08-12 13:24:14,734 - expense_tracker - INFO - parse_expense_from_email:62 - Parsing expense from email 1989613679af72ea
+2025-08-12 13:24:14,734 - expense_tracker - INFO - parse_date_from_email:94 - Final parsed date: 2025-08-10
+2025-08-12 13:24:14,735 - expense_tracker - INFO - parse_expense_from_email:95 - Successfully parsed expense: MAXIPALI AGUA CALIENTE - ₡6,680.00 - Personal
+2025-08-12 13:24:14,735 - expense_tracker - INFO - parse_expense_from_email:62 - Parsing expense from email 19891583870675ab
+2025-08-12 13:24:14,735 - expense_tracker - INFO - parse_date_from_email:94 - Final parsed date: 2025-08-09
+2025-08-12 13:24:14,736 - expense_tracker - INFO - parse_expense_from_email:95 - Successfully parsed expense: AUTO MERCADO CARTAGO - ₡2,235.00 - Groceries
+2025-08-12 13:24:14,736 - expense_tracker - INFO - parse_expense_from_email:62 - Parsing expense from email 19891235e3427715
+2025-08-12 13:24:14,736 - expense_tracker - INFO - parse_date_from_email:94 - Final parsed date: 2025-08-09
+2025-08-12 13:24:14,736 - expense_tracker - INFO - parse_expense_from_email:95 - Successfully parsed expense: Top Outlet La Lima - ₡6,000.00 - Personal
+2025-08-12 13:24:14,736 - expense_tracker - INFO - parse_expense_from_email:62 - Parsing expense from email 19890e85c14cee3b
+2025-08-12 13:24:14,737 - expense_tracker - INFO - parse_date_from_email:94 - Final parsed date: 2025-08-09
+2025-08-12 13:24:14,737 - expense_tracker - INFO - parse_expense_from_email:95 - Successfully parsed expense: FARMACIA AM PM PASEO M - ₡1,002.19 - Health/medical
+2025-08-12 13:24:14,737 - expense_tracker - INFO - parse_expense_from_email:62 - Parsing expense from email 19890b62b9f00ed2
+2025-08-12 13:24:14,738 - expense_tracker - INFO - parse_date_from_email:94 - Final parsed date: 2025-08-09
+2025-08-12 13:24:14,738 - expense_tracker - INFO - parse_expense_from_email:95 - Successfully parsed expense: REVOLUCION GASTRONOMIA - ₡2,500.00 - Personal
+2025-08-12 13:24:14,738 - expense_tracker - INFO - parse_expense_from_email:62 - Parsing expense from email 1989073557451781
+2025-08-12 13:24:14,738 - expense_tracker - INFO - parse_date_from_email:94 - Final parsed date: 2025-08-09
+2025-08-12 13:24:14,739 - expense_tracker - INFO - parse_expense_from_email:95 - Successfully parsed expense: INTERNACIONAL PCR ESSE - ₡34,000.00 - Personal
+2025-08-12 13:24:14,739 - expense_tracker - INFO - parse_expense_from_email:62 - Parsing expense from email 19890639f9ffc3b3
+2025-08-12 13:24:14,739 - expense_tracker - INFO - parse_date_from_email:94 - Final parsed date: 2025-08-09
+2025-08-12 13:24:14,740 - expense_tracker - INFO - parse_expense_from_email:95 - Successfully parsed expense: PARQUIMETRO MUNI CAR - ₡305.00 - Transportation
+2025-08-12 13:24:14,740 - expense_tracker - INFO - process_expenses:87 - Successfully parsed 10 expenses
+2025-08-12 13:24:14,740 - expense_tracker - INFO - process_expenses:91 - Step 3: Adding expenses to Google Sheets
+2025-08-12 13:24:14,740 - expense_tracker - INFO - batch_add_expenses:266 - Batch adding 10 expenses to sheet
+2025-08-12 13:24:15,055 - expense_tracker - INFO - batch_add_expenses:317 - Successfully batch added 10 expenses. Updated range: Transactions!B44:E53
+2025-08-12 13:24:15,055 - expense_tracker - INFO - process_expenses:103 - Step 4: Marking processed emails
+2025-08-12 13:24:17,887 - expense_tracker - INFO - process_expenses:110 - Expense processing completed. Processed 10 items
+2025-08-12 13:24:17,887 - expense_tracker - INFO - main:251 - Processing completed: 10 successful, 0 failed
+2025-08-12 13:24:18,380 - expense_tracker - INFO - main:269 - === ExpenseTracker Completed ===
+2025-08-12 13:55:19,940 - expense_tracker - INFO - main:221 - === ExpenseTracker Started ===
+2025-08-12 13:55:19,943 - expense_tracker - INFO - __init__:27 - Initializing ExpenseTracker
+2025-08-12 13:55:19,948 - expense_tracker - INFO - _authenticate:80 - Successfully authenticated with Gmail API
+2025-08-12 13:55:19,949 - expense_tracker - INFO - _initialize_credentials:36 - Initializing Google Sheets credentials
+2025-08-12 13:55:19,954 - expense_tracker - INFO - _initialize_credentials:71 - Google Sheets service initialized successfully
+2025-08-12 13:55:19,954 - expense_tracker - INFO - __init__:36 - ExpenseTracker initialized successfully
+2025-08-12 13:55:19,955 - expense_tracker - INFO - main:228 - Verifying system setup...
+2025-08-12 13:55:19,955 - expense_tracker - INFO - verify_setup:129 - Verifying ExpenseTracker setup
+2025-08-12 13:55:19,955 - expense_tracker - INFO - verify_gmail_access:269 - Verifying Gmail API access
+2025-08-12 13:55:20,218 - expense_tracker - INFO - verify_gmail_access:276 - Gmail access verified for: abneraq73@gmail.com
+2025-08-12 13:55:20,218 - expense_tracker - INFO - verify_sheet_access:175 - Verifying Google Sheets access
+2025-08-12 13:55:21,372 - expense_tracker - INFO - verify_sheet_access:186 - Successfully accessed sheet: August 25 Monthly budget
+2025-08-12 13:55:21,834 - expense_tracker - INFO - verify_setup:154 - Setup verification successful - Gmail: OK, Sheets: OK, Database: 88 vendors, 14 categories
+2025-08-12 13:55:21,834 - expense_tracker - INFO - main:238 - Setup verification successful
+2025-08-12 13:55:21,834 - expense_tracker - INFO - main:242 - Starting expense processing...
+2025-08-12 13:55:21,834 - expense_tracker - INFO - process_expenses:49 - Starting expense processing workflow
+2025-08-12 13:55:21,834 - expense_tracker - INFO - process_expenses:54 - Step 1: Fetching emails from Gmail
+2025-08-12 13:55:21,834 - expense_tracker - INFO - get_bac_emails:97 - Fetching BAC Credomatic emails
+2025-08-12 13:55:21,834 - expense_tracker - INFO - get_bac_emails:118 - Filtering emails for month: 2025/08
+2025-08-12 13:55:22,190 - expense_tracker - INFO - get_bac_emails:132 - Found 0 unread BAC emails
+2025-08-12 13:55:22,190 - expense_tracker - INFO - process_expenses:56 - Found 0 emails to process
+2025-08-12 13:55:22,190 - expense_tracker - INFO - process_expenses:59 - No emails found to process
+2025-08-12 13:55:22,190 - expense_tracker - INFO - main:251 - Processing completed: 0 successful, 0 failed
+2025-08-12 13:55:22,707 - expense_tracker - INFO - main:269 - === ExpenseTracker Completed ===

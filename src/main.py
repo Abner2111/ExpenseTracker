@@ -230,17 +230,17 @@ def main():
         
         if not setup_result.success:
             logger.error(f"Setup verification failed: {setup_result.message}")
-            print(f"❌ Setup verification failed: {setup_result.message}")
+            print(f"Setup verification failed: {setup_result.message}")
             if setup_result.error:
                 print(f"Error details: {setup_result.error}")
             return 1
         
-        logger.info("✅ Setup verification successful")
-        print("✅ System setup verified successfully")
+        logger.info("Setup verification successful")
+        print("System setup verified successfully")
         
         # Process expenses
         logger.info("Starting expense processing...")
-        print("🔄 Processing expenses...")
+        print("Processing expenses...")
         
         results = tracker.process_expenses()
         
@@ -249,13 +249,13 @@ def main():
         failed = len(results) - successful
         
         logger.info(f"Processing completed: {successful} successful, {failed} failed")
-        print(f"✅ Processing completed: {successful} successful, {failed} failed")
+        print(f"Processing completed: {successful} successful, {failed} failed")
         
         # Show detailed results
         if results:
-            print("\n📊 Detailed Results:")
+            print("\nDetailed Results:")
             for i, result in enumerate(results, 1):
-                status = "✅" if result.success else "❌"
+                status = "OK" if result.success else "ERROR"
                 print(f"  {i}. {status} {result.message}")
                 if not result.success and result.error:
                     print(f"     Error: {result.error}")
@@ -264,19 +264,19 @@ def main():
         status = tracker.get_system_status()
         if 'database' in status:
             db_stats = status['database']
-            print(f"\n📈 System Stats: {db_stats['vendors']} vendors, {db_stats['categories']} categories, {db_stats['total_rules']} rules")
+            print(f"\nSystem Stats: {db_stats['vendors']} vendors, {db_stats['categories']} categories, {db_stats['total_rules']} rules")
         
         logger.info("=== ExpenseTracker Completed ===")
         return 0 if failed == 0 else 1
         
     except KeyboardInterrupt:
         logger.info("Process interrupted by user")
-        print("\n⏹️  Process interrupted by user")
+        print("\nProcess interrupted by user")
         return 130
         
     except Exception as e:
         logger.error(f"Unexpected error in main: {e}")
-        print(f"❌ Unexpected error: {e}")
+        print(f"Unexpected error: {e}")
         return 1
 
 if __name__ == "__main__":
