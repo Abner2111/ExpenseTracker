@@ -2,6 +2,36 @@
 
 Un sistema automatizado avanzado para extraer datos de gastos de los correos de notificación de transacciones de BAC Credomatic, categorizarlos automáticamente y agregarlos a una hoja de cálculo de Google con conversión de divisas en tiempo real.
 
+## Índice
+
+- [Características](#características)
+- [Conversión de Divisas](#conversión-de-divisas)
+- [Manejo de Fechas en Español](#manejo-de-fechas-en-español)
+- [Categorías Soportadas](#categorías-soportadas)
+- [Comercios Reconocidos](#comercios-reconocidos)
+- [Requisitos Previos](#requisitos-previos)
+- [Tecnologías Utilizadas](#tecnologías-utilizadas)
+- [Plantilla de Hoja de Cálculo](#plantilla-de-hoja-de-cálculo)
+- [Instalación](#instalación)
+- [Configuración](#configuración)
+  - [Cómo Obtener el ID de Google Sheets](#cómo-obtener-el-id-de-google-sheets)
+- [Uso](#uso)
+- [Ejemplos de Procesamiento](#ejemplos-de-procesamiento)
+- [Estructura del Proyecto](#estructura-del-proyecto)
+- [Base de Datos SQLite](#base-de-datos-sqlite)
+- [Personalización](#personalización)
+- [Testing y Debugging](#testing-y-debugging)
+- [Solución de Problemas](#solución-de-problemas)
+- [Nuevas Características](#nuevas-características-actualizaciones-recientes)
+- [Seguridad](#seguridad)
+- [Contribuciones](#contribuciones)
+- [Casos de Uso Exitosos](#casos-de-uso-exitosos)
+- [Estadísticas del Sistema](#estadísticas-del-sistema)
+- [Licencia](#licencia)
+- [Reconocimientos](#reconocimientos)
+- [Soporte](#soporte)
+- [Roadmap Futuro](#roadmap-futuro)
+
 ## Características
 
 - **Extracción automática** de correos de notificación de BAC Credomatic
