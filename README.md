@@ -278,7 +278,7 @@ El sistema:
 ### Ejemplo 1: Spotify USD
 ```
 Email: "Comercio: SPOTIFY, Monto: USD 9.99, Fecha: Ago 15, 2025"
-Resultado:
+Resultado en Google Sheets:
 - Vendor: SPOTIFY
 - Amount: 5,028.17 CRC
 - Date: 2025-08-15
@@ -289,12 +289,22 @@ Resultado:
 ### Ejemplo 2: Supermercado CRC
 ```
 Email: "Comercio: AUTOMERCADO, Monto: CRC 25,500.00, Fecha: Jul 30, 2025"
-Resultado:
+Resultado en Google Sheets:
 - Vendor: AUTOMERCADO
 - Amount: 25,500.00 CRC
 - Date: 2025-07-30
 - Category: Groceries
 - Notes: "Email Subject: Notificación de transacción"
+```
+
+### Ejemplo Práctico con Plantilla
+Puedes ver cómo se ven estos ejemplos en una hoja real usando nuestra [plantilla de demostración](https://docs.google.com/spreadsheets/d/13P4kQm1xVlvnLSrm4Pv-mfW6t3KZyMYmIachqVDQtYU/edit?usp=sharing).
+
+Para usar esta plantilla en tu configuración:
+```python
+# En tu archivo src/config.py
+SPREADSHEET_ID = "13P4kQm1xVlvnLSrm4Pv-mfW6t3KZyMYmIachqVDQtYU"
+SPREADSHEET_NAME = "Transactions"
 ```
 
 ## Estructura del Proyecto
