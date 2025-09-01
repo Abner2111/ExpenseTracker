@@ -5,13 +5,13 @@ import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Google Sheets Configuration
-SPREADSHEET_ID = "1VK_hpmojtS0XfTJK46X7rz02Juyla7olwJRIjFXwLN0"  # august 25 Monthly budget sheet
+SPREADSHEET_ID = "159kkWuX93yD_vUDtT1szBWjmciNtBTGr7k5eZ1xhF_Y"  # september 25 Monthly budget sheet
 SPREADSHEET_NAME = "Transactions"  # Sheet name for expense data
 
 # Email Filtering Configuration
 # Set to None to process all unread emails, or specify a month/year to filter
 # Examples: "2025/07", "2025/08", "July 2025", "Aug 2025", None
-FILTER_BY_MONTH = "2025/08"  # Set to None to process all months, or specify month like "2025/08"
+FILTER_BY_MONTH = "2025/09"  # Set to None to process all months, or specify month like "2025/08"
 
 # Gmail API Configuration
 GMAIL_CREDENTIALS_PATH = os.path.join(BASE_DIR, "credentials.json")  # Path to your Gmail API credentials file

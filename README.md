@@ -1,22 +1,22 @@
-# 📊 Rastreador de Gastos Automático - BAC Credomatic
+# Rastreador de Gastos Automático - BAC Credomatic
 
 Un sistema automatizado avanzado para extraer datos de gastos de los correos de notificación de transacciones de BAC Credomatic, categorizarlos automáticamente y agregarlos a una hoja de cálculo de Google con conversión de divisas en tiempo real.
 
-## 🌟 Características
+## Características
 
-- ✅ **Extracción automática** de correos de notificación de BAC Credomatic
-- 🏪 **Detección inteligente de comercios** con base de datos extensa de vendedores costarricenses
-- 📋 **Categorización automática** usando  categorías personalizadas
-- � **Conversión automática de divisas** (USD, EUR → CRC) con tasas de cambio en tiempo real
-- 🌍 **Soporte multi-moneda** con detección automática de símbolos y códigos de divisa
-- 📅 **Análisis de fechas en español** con soporte para abreviaciones como "Ago" (Agosto)
-- 💰 **Análisis de montos avanzado** compatible con múltiples formatos numéricos
-- 📅 **Filtrado por mes** para procesar transacciones específicas
-- 🔄 **Sincronización con Google Sheets** en tiempo real
-- 🛡️ **Manejo de errores robusto** con reintentos automáticos y detección de duplicados
-- 📝 **Documentación automática** de conversiones con tasas de cambio en las notas
+- **Extracción automática** de correos de notificación de BAC Credomatic
+- **Detección inteligente de comercios** con base de datos extensa de vendedores costarricenses
+- **Categorización automática** usando categorías personalizadas
+- **Conversión automática de divisas** (USD, EUR → CRC) con tasas de cambio en tiempo real
+- **Soporte multi-moneda** con detección automática de símbolos y códigos de divisa
+- **Análisis de fechas en español** con soporte para abreviaciones como "Ago" (Agosto)
+- **Análisis de montos avanzado** compatible con múltiples formatos numéricos
+- **Filtrado por mes** para procesar transacciones específicas
+- **Sincronización con Google Sheets** en tiempo real
+- **Manejo de errores robusto** con reintentos automáticos y detección de duplicados
+- **Documentación automática** de conversiones con tasas de cambio en las notas
 
-## 💱 Conversión de Divisas
+## Conversión de Divisas
 
 ### Divisas Soportadas
 - **CRC** (Colones Costarricenses) - Moneda base
@@ -25,33 +25,33 @@ Un sistema automatizado avanzado para extraer datos de gastos de los correos de 
 - **GBP** (Libras Esterlinas) - Conversión automática
 
 ### Formatos de Moneda Detectados
-- `Monto: USD 9.99` ✅
-- `USD 25.50` ✅
-- `25.50 USD` ✅
-- `$19.99` ✅
-- `€45.99` ✅
-- `CRC 5,650.00` ✅
-- `₡15,500.50` ✅
+- `Monto: USD 9.99`
+- `USD 25.50`
+- `25.50 USD`
+- `$19.99`
+- `€45.99`
+- `CRC 5,650.00`
+- `₡15,500.50`
 
 ### Características de Conversión
-- 🌐 **Tasas de cambio en tiempo real** usando exchangerate-api.com
-- 🔄 **Tasas de respaldo** para cuando la API no esté disponible
-- 📝 **Documentación automática** en notas: "Original: 9.99 USD (Rate: 503.32)"
-- ⚡ **Conversión instantánea** a CRC para consistencia en reportes
+- **Tasas de cambio en tiempo real** usando exchangerate-api.com
+- **Tasas de respaldo** para cuando la API no esté disponible
+- **Documentación automática** en notas: "Original: 9.99 USD (Rate: 503.32)"
+- **Conversión instantánea** a CRC para consistencia en reportes
 
-## 📅 Manejo de Fechas en Español
+## Manejo de Fechas en Español
 
 ### Formatos de Fecha Soportados
-- `Ago 15, 2025` → `2025-08-15` ✅
-- `15/08/2025` → `2025-08-15` ✅
-- `15 Ago 2025` → `2025-08-15` ✅
-- `Agosto 15, 2025` → `2025-08-15` ✅
+- `Ago 15, 2025` → `2025-08-15`
+- `15/08/2025` → `2025-08-15`
+- `15 Ago 2025` → `2025-08-15`
+- `Agosto 15, 2025` → `2025-08-15`
 
 ### Meses en Español Reconocidos
 - **Abreviaciones:** ene, feb, mar, abr, may, jun, jul, ago, sep, oct, nov, dic
 - **Nombres completos:** enero, febrero, marzo, abril, mayo, junio, julio, agosto, septiembre, octubre, noviembre, diciembre
 
-## 🎯 Categorías Soportadas
+## Categorías Soportadas
 
 El sistema categoriza automáticamente las transacciones en:
 
@@ -71,7 +71,7 @@ El sistema categoriza automáticamente las transacciones en:
 - **Gifts** - Regalos (florerías, joyerías)
 - **General** - Categoría por defecto
 
-## 🏪 Comercios Reconocidos
+## Comercios Reconocidos
 
 ### Supermercados y Tiendas
 - Auto Mercado, Mas x Menos, Maxi Pali, Pali
@@ -96,7 +96,7 @@ El sistema categoriza automáticamente las transacciones en:
 
 ### Y muchos más... (100+ comercios reconocidos)
 
-## 📋 Requisitos Previos
+## Requisitos Previos
 
 - Python 3.7 o superior
 - Cuenta de Gmail con acceso a las APIs de Google
@@ -104,7 +104,7 @@ El sistema categoriza automáticamente las transacciones en:
 - Correos de BAC Credomatic en la bandeja de entrada
 - Conexión a internet para conversión de divisas en tiempo real
 
-## 🔧 Tecnologías Utilizadas
+## Tecnologías Utilizadas
 
 - **APIs de Google:** Gmail API, Google Sheets API
 - **Conversión de divisas:** exchangerate-api.com
@@ -112,17 +112,17 @@ El sistema categoriza automáticamente las transacciones en:
 - **Autenticación:** OAuth2, Google Auth
 - **Manejo de datos:** gspread, requests
 
-## � Plantilla de Hoja de Cálculo
+## Plantilla de Hoja de Cálculo
 
 Para facilitar la configuración, puedes usar esta plantilla pre-configurada:
 
-🔗 **[Plantilla de Google Sheets](https://docs.google.com/spreadsheets/d/13P4kQm1xVlvnLSrm4Pv-mfW6t3KZyMYmIachqVDQtYU/edit?usp=sharing)**
+**[Plantilla de Google Sheets](https://docs.google.com/spreadsheets/d/13P4kQm1xVlvnLSrm4Pv-mfW6t3KZyMYmIachqVDQtYU/edit?usp=sharing)**
 
 La plantilla incluye:
-- ✅ Columnas configuradas correctamente (B: Date, C: Amount, D: Description, E: Category)
-- ✅ Formato de presupuesto mensual
-- ✅ Secciones separadas para Gastos e Ingresos
-- ✅ Listo para usar con el sistema automático
+- Columnas configuradas correctamente (B: Date, C: Amount, D: Description, E: Category)
+- Formato de presupuesto mensual
+- Secciones separadas para Gastos e Ingresos
+- Listo para usar con el sistema automático
 
 **Instrucciones:**
 1. Hacer clic en "Archivo" → "Hacer una copia"
@@ -130,7 +130,7 @@ La plantilla incluye:
 3. Copiar el ID de la URL de tu copia
 4. Usar ese ID en la configuración del proyecto
 
-## �🚀 Instalación
+## Instalación
 
 1. **Clonar el repositorio:**
 ```bash
@@ -160,7 +160,7 @@ pip install -r requirements.txt
    - Asegurarse de que tenga las columnas: Date, Amount, Description, Category en las columnas B, C, D, E
    - Copiar el ID de la hoja de cálculo de la URL
 
-## ⚙️ Configuración
+## Configuración
 
 Editar el archivo `src/config.py`:
 
@@ -175,13 +175,55 @@ SPREADSHEET_NAME = "Transactions"
 FILTER_BY_MONTH = "2025/08"  # Para agosto 2025, o None para todos los meses
 ```
 
+### Cómo Obtener el ID de Google Sheets
+
+Para configurar correctamente el sistema, necesitas obtener el ID de tu hoja de cálculo de Google:
+
+#### Método 1: Desde la URL de Google Sheets
+1. **Abre tu hoja de cálculo** en Google Sheets
+2. **Copia la URL** de la barra de direcciones, que se ve así:
+   ```
+   https://docs.google.com/spreadsheets/d/1VK_hpmojtS0XfTJK46X7rz02Juyla7olwJRIjFXwLN0/edit#gid=0
+   ```
+3. **Extrae el ID** que está entre `/d/` y `/edit`:
+   ```
+   ID = 1VK_hpmojtS0XfTJK46X7rz02Juyla7olwJRIjFXwLN0
+   ```
+
+#### Método 2: Desde el Menú de Compartir
+1. **Haz clic en "Compartir"** en la esquina superior derecha
+2. **Copia el enlace** que se genera
+3. **Extrae el ID** de la misma manera que el método anterior
+
+#### Método 3: Crear Nueva Hoja desde la Plantilla
+1. **Usa la plantilla recomendada:** [Plantilla de ExpenseTracker](https://docs.google.com/spreadsheets/d/13P4kQm1xVlvnLSrm4Pv-mfW6t3KZyMYmIachqVDQtYU/edit?usp=sharing)
+2. **Haz clic en "Archivo" → "Hacer una copia"**
+3. **Renombra tu copia** (ej: "Agosto 2025 - Gastos")
+4. **Copia el ID** de la URL de tu nueva hoja
+
+#### Ejemplo Práctico
+Si tu URL es:
+```
+https://docs.google.com/spreadsheets/d/1VK_hpmojtS0XfTJK46X7rz02Juyla7olwJRIjFXwLN0/edit#gid=0
+```
+
+Tu configuración en `config.py` debe quedar así:
+```python
+SPREADSHEET_ID = "1VK_hpmojtS0XfTJK46X7rz02Juyla7olwJRIjFXwLN0"
+```
+
+#### Importante
+- **NO incluyas** `/d/` o `/edit` en el ID
+- **Solo copia** la parte alfanumérica larga
+- **Asegúrate** de que la hoja tenga las columnas correctas (B: Date, C: Amount, D: Vendor, E: Category)
+
 ### Opciones de Filtrado por Mes
 
 - `"2025/08"` - Procesar solo transacciones de agosto 2025
 - `"2025/07"` - Procesar solo transacciones de julio 2025
 - `None` - Procesar todos los correos no leídos
 
-## 🏃‍♂️ Uso
+## Uso
 
 Ejecutar el script principal:
 
@@ -191,17 +233,17 @@ python main.py
 ```
 
 El sistema:
-1. 🔐 Se autentica con las APIs de Google
-2. 📧 Busca correos no leídos de BAC Credomatic (con filtro opcional por mes)
-3. 🔍 Extrae información de transacciones (fecha, monto, comercio, divisa)
-4. 💱 Detecta divisa automáticamente y convierte a CRC si es necesario
-5. 📅 Analiza fechas en español y las convierte al formato estándar
-6. 🏷️ Categoriza automáticamente cada transacción usando IA de reconocimiento
-7. 📊 Agrega los datos a la hoja de cálculo con notas de conversión
-8. ✅ Marca los correos como leídos
-9. 🛡️ Detecta y evita duplicados automáticamente
+1. Se autentica con las APIs de Google
+2. Busca correos no leídos de BAC Credomatic (con filtro opcional por mes)
+3. Extrae información de transacciones (fecha, monto, comercio, divisa)
+4. Detecta divisa automáticamente y convierte a CRC si es necesario
+5. Analiza fechas en español y las convierte al formato estándar
+6. Categoriza automáticamente cada transacción usando IA de reconocimiento
+7. Agrega los datos a la hoja de cálculo con notas de conversión
+8. Marca los correos como leídos
+9. Detecta y evita duplicados automáticamente
 
-## 🔍 Ejemplos de Procesamiento
+## Ejemplos de Procesamiento
 
 ### Ejemplo 1: Spotify USD
 ```
@@ -225,7 +267,7 @@ Resultado:
 - Notes: "Email Subject: Notificación de transacción"
 ```
 
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 ExpenseTracker/
@@ -252,7 +294,7 @@ ExpenseTracker/
 └── README.md                    # Este archivo (documentación completa)
 ```
 
-## 💽 Base de Datos SQLite
+## Base de Datos SQLite
 
 ### Configuración Inicial
 
@@ -315,9 +357,7 @@ python src/admin_database.py delete-vendor --keyword "comercio_obsoleto"
 
 Las reglas con mayor prioridad se evalúan primero.
 
-
-
-## 🔧 Personalización
+## Personalización
 
 ### Agregar Nuevos Comercios
 
@@ -369,7 +409,7 @@ fallback_rates = {
 }
 ```
 
-## 🧪 Testing y Debugging
+## Testing y Debugging
 
 ### Scripts de Prueba Incluidos
 
@@ -406,7 +446,7 @@ Debug: Found vendor in Comercio field: 'SPOTIFY'
 Debug: Assigned category 'Streaming' (streaming service match)
 ```
 
-## 🛠️ Solución de Problemas
+## Solución de Problemas
 
 ### Error de Autenticación
 - Verificar que `credentials.json` esté en la carpeta `src/`
@@ -439,46 +479,46 @@ Debug: Assigned category 'Streaming' (streaming service match)
 - Revisar la lógica de categorización en el código
 - Agregar nuevos comercios a `vendor_keywords` si es necesario
 
-## ✨ Nuevas Características (Actualizaciones Recientes)
+## Nuevas Características (Actualizaciones Recientes)
 
-### v3.0 - Sistema de Base de Datos SQLite
-- ✅ Migración de vendedores y categorías a SQLite
-- ✅ Herramienta de administración sin código
-- ✅ Reglas de categorización con prioridades
-- ✅ Sistema de pruebas integrado
-- ✅ Gestión de datos más eficiente y mantenible
+### Sistema de Base de Datos SQLite
+- Migración de vendedores y categorías a SQLite
+- Herramienta de administración sin código
+- Reglas de categorización con prioridades
+- Sistema de pruebas integrado
+- Gestión de datos más eficiente y mantenible
 
-### v2.3 - Sistema de Testing
-- ✅ Scripts de prueba automatizados
-- ✅ Validación de todos los formatos de divisa
-- ✅ Tests de integración completa
-- ✅ Debugging mejorado con logs detallados
+### Sistema de Testing
+- Scripts de prueba automatizados
+- Validación de todos los formatos de divisa
+- Tests de integración completa
+- Debugging mejorado con logs detallados
 
-### v2.2 - Detección Avanzada de Comercios
-- ✅ Limpieza automática de nombres de comercios
-- ✅ Separación de información de monto del nombre
-- ✅ Base de datos expandida de comercios CR
-- ✅ Categorización inteligente mejorada
+### Detección Avanzada de Comercios
+- Limpieza automática de nombres de comercios
+- Separación de información de monto del nombre
+- Base de datos expandida de comercios CR
+- Categorización inteligente mejorada
 
-### v2.1 - Mejoras en Parsing de Fechas
-- ✅ Soporte completo para meses en español
-- ✅ Manejo de abreviaciones (Ago → Agosto)
-- ✅ Múltiples formatos de fecha
-- ✅ Parsing robusto con fallbacks
+### Mejoras en Parsing de Fechas
+- Soporte completo para meses en español
+- Manejo de abreviaciones (Ago → Agosto)
+- Múltiples formatos de fecha
+- Parsing robusto con fallbacks
 
-### v2.0 - Sistema de Conversión de Divisas
-- ✅ Conversión automática USD/EUR → CRC
-- ✅ Tasas de cambio en tiempo real via API
-- ✅ Tasas de respaldo para offline
-- ✅ Documentación de conversiones en notas
+### Sistema de Conversión de Divisas
+- Conversión automática USD/EUR → CRC
+- Tasas de cambio en tiempo real via API
+- Tasas de respaldo para offline
+- Documentación de conversiones en notas
 
-## 🔒 Seguridad
+## Seguridad
 
-- ⚠️ **Nunca** subir `credentials.json` o `token.pickle` al control de versiones
+- **Nunca** subir `credentials.json` o `token.pickle` al control de versiones
 - Los archivos sensibles están incluidos en `.gitignore`
 - Usar cuentas de servicio para acceso programático a Google Sheets
 
-## 🤝 Contribuciones
+## Contribuciones
 
 Las contribuciones son bienvenidas! Por favor:
 
@@ -489,21 +529,21 @@ Las contribuciones son bienvenidas! Por favor:
 5. Enviar un pull request
 
 ### Áreas de Mejora Buscadas
-- 🌐 Soporte para más divisas internacionales
-- 🏪 Expansión de base de datos de comercios
-- 📊 Mejoras en lógica de categorización
-- 🔄 Integración con otros bancos costarricenses
-- 📱 Interface web o mobile
+- Soporte para más divisas internacionales
+- Expansión de base de datos de comercios
+- Mejoras en lógica de categorización
+- Integración con otros bancos costarricenses
+- Interface web o mobile
 
-## 🏆 Casos de Uso Exitosos
+## Casos de Uso Exitosos
 
-- ✅ **Spotify USD 9.99** → Conversión automática a ~5,000 CRC
-- ✅ **Amazon EUR 45.99** → Conversión automática a ~26,000 CRC  
-- ✅ **Auto Mercado CRC 15,500** → Categorización como "Groceries"
-- ✅ **Uber $25.50** → Categorización como "Transportation"
-- ✅ **Fechas españolas** → "Ago 15, 2025" se convierte a "2025-08-15"
+- **Spotify USD 9.99** → Conversión automática a ~5,000 CRC
+- **Amazon EUR 45.99** → Conversión automática a ~26,000 CRC  
+- **Auto Mercado CRC 15,500** → Categorización como "Groceries"
+- **Uber $25.50** → Categorización como "Transportation"
+- **Fechas españolas** → "Ago 15, 2025" se convierte a "2025-08-15"
 
-## 📊 Estadísticas del Sistema
+## Estadísticas del Sistema
 
 - **100+ comercios** reconocidos automáticamente
 - **15+ categorías** para organización precisa
@@ -512,11 +552,11 @@ Las contribuciones son bienvenidas! Por favor:
 - **Duplicados:** Detección y prevención automática
 - **Rate limiting:** Manejo inteligente de límites de API
 
-## 📝 Licencia
+## Licencia
 
 Este proyecto está bajo la Licencia MIT. Ver el archivo LICENSE para más detalles.
 
-## 🙏 Reconocimientos
+## Reconocimientos
 
 - APIs de Google para Gmail y Sheets
 - [exchangerate-api.com](https://exchangerate-api.com) para conversión de divisas en tiempo real
@@ -524,20 +564,20 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo LICENSE para más detal
 - BAC Credomatic por el formato consistente de correos
 - Usuarios beta que ayudaron a identificar y resolver edge cases
 
-## 📞 Soporte
+## Soporte
 
 Para preguntas o problemas:
-- 🐛 Abrir un issue en GitHub para bugs
-- 💡 Usar Discussions para preguntas generales  
-- 📖 Revisar la documentación de las APIs de Google
-- 🔍 Consultar los logs de debug para troubleshooting
-- 🧪 Ejecutar scripts de test para validar instalación
+- Abrir un issue en GitHub para bugs
+- Usar Discussions para preguntas generales  
+- Revisar la documentación de las APIs de Google
+- Consultar los logs de debug para troubleshooting
+- Ejecutar scripts de test para validar instalación
 
-## 🚀 Roadmap Futuro
+## Roadmap Futuro
 
 - [ ] Soporte para más bancos costarricenses (BCR, Banco Nacional)
 - [ ] Machine Learning para categorización mejorada
 
 ---
 
-**¡Automatiza tu seguimiento de gastos con conversión de divisas inteligente y mantén tu presupuesto bajo control! 💰💱📊**
+**¡Automatiza tu seguimiento de gastos con conversión de divisas inteligente y mantén tu presupuesto bajo control!**

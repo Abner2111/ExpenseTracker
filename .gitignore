@@ -3,6 +3,11 @@ credentials.json
 src/token.pickle
 token.pickle
 
+# Log files
+*.log
+logs/
+log/
+
 # Python cache files
 __pycache__/
 *.py[cod]
