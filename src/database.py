@@ -208,3 +208,60 @@ class ExpenseDatabase:
         except sqlite3.Error as e:
             print(f"Error updating vendor keyword: {e}")
             return False
+
+    def get_all_category_rules_with_id(self) -> List[Tuple]:
+        """Get all active category rules including their row id"""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                'SELECT id, rule_type, pattern, category, priority '
+                'FROM category_rules WHERE active = 1 ORDER BY priority DESC'
+            )
+            return cursor.fetchall()
+
+    def update_category_rule(self, rule_id: int, rule_type: str, pattern: str,
+                             category: str, priority: int) -> bool:
+        """Update an existing category rule by id"""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    'UPDATE category_rules '
+                    'SET rule_type=?, pattern=?, category=?, priority=?, '
+                    '    updated_at=CURRENT_TIMESTAMP '
+                    'WHERE id=?',
+                    (rule_type, pattern.lower(), category, priority, rule_id)
+                )
+                conn.commit()
+                return cursor.rowcount > 0
+        except sqlite3.Error as e:
+            print(f"Error updating category rule: {e}")
+            return False
+
+    def delete_category_rule(self, rule_id: int) -> bool:
+        """Delete a category rule by id"""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute('DELETE FROM category_rules WHERE id=?', (rule_id,))
+                conn.commit()
+                return cursor.rowcount > 0
+        except sqlite3.Error as e:
+            print(f"Error deleting category rule: {e}")
+            return False
+
+    def get_all_vendors_full(self) -> List[Tuple]:
+        """Get all vendor keywords with id, keyword, vendor_name, category"""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                'SELECT id, keyword, vendor_name, COALESCE(category,"") '
+                'FROM vendor_keywords ORDER BY keyword'
+            )
+            return cursor.fetchall()
+
+    def test_text(self, text: str) -> Tuple[str, str]:
+        """Return (vendor, category) for arbitrary text (same logic as runtime)"""
+        vendor = self.find_vendor_by_text(text) or text
+        category = self.categorize_vendor(vendor)
+        return vendor, category

@@ -16,6 +16,8 @@ Un sistema automatizado avanzado para extraer datos de gastos de los correos de 
 - [Configuración](#configuración)
   - [Cómo Obtener el ID de Google Sheets](#cómo-obtener-el-id-de-google-sheets)
 - [Uso](#uso)
+  - [Interfaz Gráfica](#opción-1-interfaz-gráfica-recomendada)
+  - [Línea de Comandos](#opción-2-línea-de-comandos)
 - [Ejemplos de Procesamiento](#ejemplos-de-procesamiento)
 - [Estructura del Proyecto](#estructura-del-proyecto)
 - [Base de Datos SQLite](#base-de-datos-sqlite)
@@ -209,7 +211,14 @@ FILTER_BY_MONTH = "2025/08"  # Para agosto 2025, o None para todos los meses
 
 Para configurar correctamente el sistema, necesitas obtener el ID de tu hoja de cálculo de Google:
 
-#### Método 1: Desde la URL de Google Sheets
+#### Método 1: Usando la Interfaz Gráfica (Más Fácil)
+1. **Ejecuta la GUI:** `python run_gui.py`
+2. **Ve a la pestaña "Configuración"**
+3. **Copia la URL completa** de tu Google Sheet
+4. **Pégala directamente** en el campo "URL o ID de Google Sheet"
+5. **El sistema extraerá automáticamente el ID**
+
+#### Método 2: Desde la URL de Google Sheets
 1. **Abre tu hoja de cálculo** en Google Sheets
 2. **Copia la URL** de la barra de direcciones, que se ve así:
    ```
@@ -220,12 +229,12 @@ Para configurar correctamente el sistema, necesitas obtener el ID de tu hoja de 
    ID = 1VK_hpmojtS0XfTJK46X7rz02Juyla7olwJRIjFXwLN0
    ```
 
-#### Método 2: Desde el Menú de Compartir
+#### Método 3: Desde el Menú de Compartir
 1. **Haz clic en "Compartir"** en la esquina superior derecha
 2. **Copia el enlace** que se genera
 3. **Extrae el ID** de la misma manera que el método anterior
 
-#### Método 3: Crear Nueva Hoja desde la Plantilla
+#### Método 4: Crear Nueva Hoja desde la Plantilla
 1. **Usa la plantilla recomendada:** [Plantilla de ExpenseTracker](https://docs.google.com/spreadsheets/d/13P4kQm1xVlvnLSrm4Pv-mfW6t3KZyMYmIachqVDQtYU/edit?usp=sharing)
 2. **Haz clic en "Archivo" → "Hacer una copia"**
 3. **Renombra tu copia** (ej: "Agosto 2025 - Gastos")
@@ -254,6 +263,31 @@ SPREADSHEET_ID = "1VK_hpmojtS0XfTJK46X7rz02Juyla7olwJRIjFXwLN0"
 - `None` - Procesar todos los correos no leídos
 
 ## Uso
+
+### Opción 1: Interfaz Gráfica (Recomendada)
+
+Ejecutar la interfaz gráfica:
+
+```bash
+python run_gui.py
+```
+
+O desde la carpeta src:
+```bash
+cd src
+python gui.py
+```
+
+La interfaz gráfica incluye:
+- **Configuración visual** de Google Sheets ID y filtros
+- **Detección automática de ID** desde URLs pegadas de Google Sheets
+- **Botón de pegar** desde portapapeles para mayor comodidad
+- **Ejecución con un clic** del tracker
+- **Monitoreo en tiempo real** del progreso
+- **Visualización de resultados** y logs
+- **Validación de configuración** antes de ejecutar
+
+### Opción 2: Línea de Comandos
 
 Ejecutar el script principal:
 
@@ -313,11 +347,21 @@ SPREADSHEET_NAME = "Transactions"
 ExpenseTracker/
 ├── src/                          # Código fuente principal
 │   ├── main.py                   # Script principal con lógica de parsing avanzada
+│   ├── gui.py                    # Interfaz gráfica de usuario (GUI)
 │   ├── config.py                 # Configuración (IDs, filtros, rutas)
+│   ├── config_manager.py         # Gestor de configuración modular
+│   ├── logger.py                 # Sistema de logging
+│   ├── models.py                 # Modelos de datos
+│   ├── email_parser.py           # Parser de correos de Gmail
+│   ├── currency_converter.py     # Convertidor de divisas
+│   ├── date_parser.py            # Parser de fechas en español
+│   ├── expense_parser.py         # Parser de gastos
+│   ├── sheets_manager.py         # Gestor de Google Sheets
 │   ├── database.py               # Módulo de base de datos SQLite
 │   ├── admin_database.py         # Herramienta de administración de base de datos
 │   ├── credentials.json          # Credenciales de Google (no incluido)
 │   └── token.pickle              # Token de acceso (generado automáticamente)
+├── run_gui.py                    # Launcher para la interfaz gráfica
 ├── data/                         # Directorio de datos
 │   └── expense_tracker.db        # Base de datos SQLite
 ├── test/                         # Scripts de prueba

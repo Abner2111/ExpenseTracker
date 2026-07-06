@@ -61,10 +61,17 @@ class EmailParser:
             # Refresh or create new credentials
             if not creds or not creds.valid:
                 if creds and creds.expired and creds.refresh_token:
-                    logger.info("Refreshing expired Google credentials")
-                    creds.refresh(Request())
-                else:
-                    logger.info("Creating new Google credentials")
+                    try:
+                        logger.info("Refreshing expired Google credentials")
+                        creds.refresh(Request())
+                    except Exception as refresh_error:
+                        logger.warning(f"Token refresh failed ({refresh_error}) — deleting stale token and re-authenticating")
+                        if os.path.exists(token_path):
+                            os.remove(token_path)
+                        creds = None
+                
+                if not creds:
+                    logger.info("Creating new Google credentials via OAuth browser flow")
                     credentials_path = config_manager.get_credentials_path()
                     flow = InstalledAppFlow.from_client_secrets_file(
                         credentials_path, config_manager.get_google_scopes()

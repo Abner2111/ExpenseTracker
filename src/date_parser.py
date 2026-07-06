@@ -19,21 +19,23 @@ class DateParser:
         self.spanish_months_abbr = {
             'ene': 'Jan', 'feb': 'Feb', 'mar': 'Mar', 'abr': 'Apr',
             'may': 'May', 'jun': 'Jun', 'jul': 'Jul', 'ago': 'Aug',
-            'sep': 'Sep', 'oct': 'Oct', 'nov': 'Nov', 'dic': 'Dec'
+            'sep': 'Sep', 'oct': 'Oct', 'nov': 'Nov', 'dic': 'Dec',
+            # Additional variations
+            'sept': 'Sep', 'set': 'Sep'  # Common variations of September
         }
         
         # Date patterns to try (in order of preference)
         self.date_patterns = [
-            # BAC format: "Ago 6, 2025"
-            r'(?:Fecha:|fecha:)\s*([A-Za-z]{3}\s+\d{1,2},\s+\d{4})',
+            # BAC format: "Ago 6, 2025" or "Sep 5, 2025, 18:19" (with optional time)
+            r'(?:Fecha:|fecha:)\s*([A-Za-z]{3}\s+\d{1,2},\s+\d{4})(?:,\s+\d{1,2}:\d{2})?',
             # ISO format: "2025-08-06"
             r'(\d{4}-\d{2}-\d{2})',
             # DD/MM/YYYY format
             r'(\d{1,2}/\d{1,2}/\d{4})',
             # DD-MM-YYYY format
             r'(\d{1,2}-\d{1,2}-\d{4})',
-            # Month DD, YYYY format
-            r'([A-Za-z]{3,}\s+\d{1,2},\s+\d{4})',
+            # Month DD, YYYY format (with optional time)
+            r'([A-Za-z]{3,}\s+\d{1,2},\s+\d{4})(?:,\s+\d{1,2}:\d{2})?',
             # DD Month YYYY format
             r'(\d{1,2}\s+[A-Za-z]{3,}\s+\d{4})'
         ]
@@ -89,6 +91,7 @@ class DateParser:
         
         if not date_found:
             logger.warning("No date patterns matched, using current date")
+            logger.debug(f"Email text that failed to match: {email_text[:200]}...")
             parsed_date = datetime.now().strftime('%Y-%m-%d')
         
         logger.info(f"Final parsed date: {parsed_date}")

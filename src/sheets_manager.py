@@ -47,11 +47,17 @@ class SheetsManager:
             # Refresh or get new credentials if needed
             if not self.credentials or not self.credentials.valid:
                 if self.credentials and self.credentials.expired and self.credentials.refresh_token:
-                    logger.info("Refreshing expired credentials")
-                    self.credentials.refresh(Request())
-                else:
+                    try:
+                        logger.info("Refreshing expired credentials")
+                        self.credentials.refresh(Request())
+                    except Exception as refresh_error:
+                        logger.warning(f"Token refresh failed ({refresh_error}) — deleting stale token and re-authenticating")
+                        if os.path.exists(token_path):
+                            os.remove(token_path)
+                        self.credentials = None
+                
+                if not self.credentials:
                     logger.info("Getting new credentials via OAuth flow")
-                    
                     credentials_path = os.path.join(self.config.src_dir, 'credentials.json')
                     if not os.path.exists(credentials_path):
                         raise GoogleSheetsError(f"Credentials file not found: {credentials_path}")
