@@ -29,23 +29,41 @@ class ExpenseParser:
             r'CRC\s+(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)',
             # Pattern 2: "Monto: USD 9.99"
             r'(?:Monto|Total):\s*USD\s+(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)',
-            # Pattern 3: "USD 25.50"
+            # Pattern 3: "Monto: EUR 9.00"
+            r'(?:Monto|Total):\s*EUR\s+(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)',
+            # Pattern 4: "Monto: GBP 9.00"
+            r'(?:Monto|Total):\s*GBP\s+(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)',
+            # Pattern 5: "USD 25.50"
             r'USD\s+(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)',
-            # Pattern 4: "$19.99"
+            # Pattern 6: "EUR 9.00"
+            r'EUR\s+(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)',
+            # Pattern 7: "GBP 9.00"
+            r'GBP\s+(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)',
+            # Pattern 8: "$19.99"
             r'\$(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)',
-            # Pattern 5: "€45.99"
+            # Pattern 9: "€45.99"
             r'€(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)',
-            # Pattern 6: "₡15,500.50"
+            # Pattern 10: "£45.99"
+            r'£(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)',
+            # Pattern 11: "₡15,500.50"
             r'₡(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)',
-            # Pattern 7: "25.50 USD"
+            # Pattern 12: "25.50 USD"
             r'(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s+USD',
-            # Pattern 8: "Monto: 5000.00"
+            # Pattern 13: "25.50 EUR"
+            r'(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s+EUR',
+            # Pattern 14: "25.50 GBP"
+            r'(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s+GBP',
+            # Pattern 15: "Monto: 5000.00" (CRC fallback)
             r'(?:Monto|Total):\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)',
         ]
         
         # Currency hints for each pattern
         self.currency_hints = [
-            'CRC', 'USD', 'USD', 'USD', 'EUR', 'CRC', 'USD', 'CRC'
+            'CRC', 'USD', 'EUR', 'GBP',
+            'USD', 'EUR', 'GBP',
+            'USD', 'EUR', 'GBP', 'CRC',
+            'USD', 'EUR', 'GBP',
+            'CRC',
         ]
     
     def parse_expense_from_email(self, email_text: str, email_id: str = None) -> Expense:
