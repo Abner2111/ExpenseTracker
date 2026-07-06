@@ -90,21 +90,28 @@ class EmailParser:
             logger.error(f"Failed to authenticate with Gmail API: {e}")
             raise ProcessingError(f"Gmail authentication failed: {e}")
     
-    def get_bac_emails(self, max_results: int = None) -> List[EmailData]:
+    def get_bac_emails(self, max_results: int = None,
+                       include_read: bool = False) -> List[EmailData]:
         """
         Retrieve BAC Credomatic notification emails
-        
+
         Args:
-            max_results: Maximum number of emails to retrieve
-            
+            max_results:  Maximum number of emails to retrieve
+            include_read: If True, fetch read + unread (recovery mode)
+
         Returns:
             List of EmailData objects
         """
         try:
             logger.info("Fetching BAC Credomatic emails")
-            
-            # Build search query - match original BAC Credomatic patterns
-            query = 'is:unread subject:"Notificación de transacción" from:notificacion@notificacionesbaccr.com'
+
+            # Build search query
+            base = 'subject:"Notificación de transacción" from:notificacion@notificacionesbaccr.com'
+            if include_read:
+                logger.info("Recovery mode: fetching read + unread emails")
+                query = base
+            else:
+                query = 'is:unread ' + base
             
             # Add month filter if specified
             if self.config.filter_by_month:
@@ -300,17 +307,10 @@ class EmailParser:
                 error=str(e)
             )
     
-    def fetch_bac_emails(self, max_results: int = None) -> List[EmailData]:
-        """
-        Fetch BAC Credomatic emails - wrapper for get_bac_emails for consistency
-        
-        Args:
-            max_results: Maximum number of emails to fetch
-            
-        Returns:
-            List of EmailData objects
-        """
-        return self.get_bac_emails(max_results)
+    def fetch_bac_emails(self, max_results: int = None,
+                         include_read: bool = False) -> List[EmailData]:
+        """Wrapper for get_bac_emails."""
+        return self.get_bac_emails(max_results, include_read=include_read)
     
     def mark_email_as_processed(self, email_id: str):
         """

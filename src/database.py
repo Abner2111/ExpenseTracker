@@ -64,7 +64,7 @@ class ExpenseDatabase:
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_vendor_keywords_keyword ON vendor_keywords(keyword)')
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_category_rules_pattern ON category_rules(pattern)')
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_category_rules_priority ON category_rules(priority DESC)')
-            
+
             conn.commit()
     
     def add_vendor_keyword(self, keyword: str, vendor_name: str, category: str = None) -> bool:

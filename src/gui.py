@@ -24,6 +24,12 @@ try:
 except ImportError:
     _db_available = False
 
+try:
+    from email_history import EmailHistoryDB
+    _history_available = True
+except ImportError:
+    _history_available = False
+
 
 # ── Colour palette ────────────────────────────────────────────────────────────
 C = {
@@ -372,6 +378,25 @@ class ExpenseTrackerGUI:
                  anchor="w", wraplength=190,
                  justify="left").pack(anchor="w")
 
+        # Recovery mode toggle
+        tk.Frame(ctrl, bg=C["border"], height=1).pack(fill=tk.X, pady=(12, 8))
+        self.include_read_var = tk.BooleanVar(value=False)
+        chk_frame = tk.Frame(ctrl, bg=C["card"])
+        chk_frame.pack(fill=tk.X)
+        chk = tk.Checkbutton(
+            chk_frame, text="Incluir emails ya leídos",
+            variable=self.include_read_var,
+            bg=C["card"], fg=C["text_dim"],
+            activebackground=C["card"], activeforeground=C["text"],
+            selectcolor=C["card"],
+            font=("Segoe UI", 9), anchor="w",
+            relief="flat", bd=0, cursor="hand2",
+        )
+        chk.pack(anchor="w")
+        tk.Label(chk_frame, text="Modo recuperación — útil si\nel historial fue eliminado",
+                 bg=C["card"], fg=C["text_muted"],
+                 font=("Segoe UI", 8), justify="left").pack(anchor="w", pady=(2, 0))
+
         # Active config card
         cfg_outer, cfg = self._card(left, "Configuración activa")
         cfg_outer.pack(fill=tk.X)
@@ -515,6 +540,10 @@ class ExpenseTrackerGUI:
 
         # Lazy-init DB connection (once)
         self._db = ExpenseDatabase()
+        if _history_available:
+            self._history_db = EmailHistoryDB()
+        else:
+            self._history_db = None
 
         body = tk.Frame(parent, bg=C["bg"])
         body.pack(fill=tk.BOTH, expand=True, padx=0, pady=0)
@@ -543,6 +572,7 @@ class ExpenseTrackerGUI:
             ("vendors", "🏪  Vendors"),
             ("rules",   "📐  Reglas"),
             ("test",    "🔬  Probar"),
+            ("history", "📜  Historial"),
         ]:
             btn = tk.Button(
                 tab_bar, text=tab_label,
@@ -562,6 +592,7 @@ class ExpenseTrackerGUI:
             ("vendors", self._build_db_vendors_tab),
             ("rules",   self._build_db_rules_tab),
             ("test",    self._build_db_test_tab),
+            ("history", self._build_db_history_tab),
         ]:
             f = tk.Frame(body, bg=C["bg"])
             builder(f)
@@ -937,6 +968,139 @@ class ExpenseTrackerGUI:
         self._test_vendor_var.set(vendor)
         self._test_category_var.set(category)
 
+    # ── History tab ───────────────────────────────────────────────────────────
+    def _build_db_history_tab(self, parent):
+        if not _history_available or self._history_db is None:
+            tk.Label(parent, text="Módulo de historial no disponible.",
+                     bg=C["bg"], fg=C["error"], font=("Segoe UI", 12)).pack(pady=40)
+            return
+        # Stats bar
+        stats_outer, stats_inner = self._card(parent, pady_inner=12, padx_inner=18)
+        stats_outer.pack(fill=tk.X, pady=(14, 10))
+
+        self._hist_stat_vars = {}
+        stats_row = tk.Frame(stats_inner, bg=C["card"])
+        stats_row.pack(fill=tk.X)
+
+        for key, label, color in [
+            ("total",   "Total",     C["text"]),
+            ("success", "Exitosos",  C["success"]),
+            ("skipped", "Omitidos",  C["warning"]),
+            ("errors",  "Errores",   C["error"]),
+        ]:
+            col = tk.Frame(stats_row, bg=C["card"])
+            col.pack(side=tk.LEFT, expand=True)
+            var = tk.StringVar(value="—")
+            self._hist_stat_vars[key] = var
+            tk.Label(col, textvariable=var, bg=C["card"], fg=color,
+                     font=("Segoe UI", 20, "bold")).pack()
+            tk.Label(col, text=label, bg=C["card"], fg=C["text_muted"],
+                     font=("Segoe UI", 9)).pack()
+
+        # Toolbar
+        top = tk.Frame(parent, bg=C["bg"])
+        top.pack(fill=tk.X, pady=(0, 8))
+
+        self._hist_search_var = tk.StringVar()
+        self._hist_search_var.trace("w", lambda *_: self._refresh_history())
+        sk = tk.Entry(
+            top, textvariable=self._hist_search_var,
+            font=("Segoe UI", 10), bg="white", fg=C["text"],
+            relief="flat", bd=0,
+            highlightthickness=1, highlightbackground=C["border"],
+            highlightcolor=C["primary"],
+        )
+        sk.pack(side=tk.LEFT, fill=tk.X, expand=True, ipady=7, padx=(0, 10))
+
+        # Status filter
+        self._hist_filter_var = tk.StringVar(value="Todos")
+        flt = ttk.Combobox(top, textvariable=self._hist_filter_var,
+                           values=["Todos", "success", "error", "skipped"],
+                           state="readonly", width=12,
+                           font=("Segoe UI", 10))
+        flt.pack(side=tk.LEFT, padx=(0, 10))
+        flt.bind("<<ComboboxSelected>>", lambda _: self._refresh_history())
+
+        self._ghost_btn(top, "🔄  Actualizar",
+                        self._refresh_history).pack(side=tk.LEFT)
+
+        # Treeview
+        tree_frame = tk.Frame(parent, bg=C["card"],
+                              highlightthickness=1, highlightbackground=C["border"])
+        tree_frame.pack(fill=tk.BOTH, expand=True)
+
+        cols = ("processed_at", "status", "vendor", "original", "amount_crc",
+                "category", "date", "error")
+        self._hist_tree = ttk.Treeview(tree_frame, columns=cols,
+                                        show="headings", style="DB.Treeview")
+
+        for col, heading, w in [
+            ("processed_at", "Procesado en",   155),
+            ("status",       "Estado",           80),
+            ("vendor",       "Vendor",          170),
+            ("original",     "Monto original",  120),
+            ("amount_crc",   "Monto CRC",       100),
+            ("category",     "Categoría",       130),
+            ("date",         "Fecha gasto",     100),
+            ("error",        "Error",           220),
+        ]:
+            self._hist_tree.heading(col, text=heading,
+                                     command=lambda c=col: self._sort_tree(self._hist_tree, c))
+            self._hist_tree.column(col, width=w, minwidth=60)
+
+        # Tag colours for status
+        self._hist_tree.tag_configure("success", foreground=C["success"])
+        self._hist_tree.tag_configure("error",   foreground=C["error"])
+        self._hist_tree.tag_configure("skipped", foreground=C["warning"])
+
+        vsb = ttk.Scrollbar(tree_frame, orient="vertical",
+                             command=self._hist_tree.yview)
+        self._hist_tree.configure(yscrollcommand=vsb.set)
+        vsb.pack(side=tk.RIGHT, fill=tk.Y)
+        self._hist_tree.pack(fill=tk.BOTH, expand=True)
+
+        self._refresh_history()
+
+    def _refresh_history(self):
+        q      = self._hist_search_var.get().lower()
+        filt   = self._hist_filter_var.get() if hasattr(self, "_hist_filter_var") else "Todos"
+        rows   = self._history_db.get_history(limit=500)
+        stats  = self._history_db.get_stats()
+
+        for key, val in stats.items():
+            if key in self._hist_stat_vars:
+                self._hist_stat_vars[key].set(str(val))
+
+        self._hist_tree.delete(*self._hist_tree.get_children())
+
+        STATUS_ICONS = {"success": "✅", "error": "❌", "skipped": "⏭"}
+
+        for (email_id, vendor, orig_amt, orig_cur,
+             amount, category, exp_date, status, error, proc_at) in rows:
+
+            if filt != "Todos" and status != filt:
+                continue
+
+            vendor   = vendor   or ""
+            category = category or ""
+            error    = error    or ""
+
+            if q and q not in (vendor + category + status + error + (exp_date or "")).lower():
+                continue
+
+            orig_str = (f"{orig_amt:.2f} {orig_cur}"
+                        if orig_amt and orig_cur else "")
+            crc_str  = (f"₡{amount:,.0f}" if amount else "")
+            icon     = STATUS_ICONS.get(status, status)
+
+            self._hist_tree.insert(
+                "", tk.END,
+                values=(proc_at, f"{icon} {status}", vendor,
+                        orig_str, crc_str,
+                        category, exp_date or "", error[:60]),
+                tags=(status,),
+            )
+
     # ── Treeview sort helper ──────────────────────────────────────────────────
     def _sort_tree(self, tree, col):
         data = [(tree.set(iid, col), iid) for iid in tree.get_children("")]
@@ -1195,22 +1359,27 @@ class ExpenseTrackerGUI:
 
         self._clear_log()
         ts = datetime.now().strftime("%H:%M:%S")
-        self._log(f"  [{ts}]  Iniciando ExpenseTracker\n\n", "info")
+        include_read = self.include_read_var.get()
+        if include_read:
+            self._log(f"  [{ts}]  ⚠️  MODO RECUPERACIÓN — incluyendo emails leídos\n\n", "warn")
+        else:
+            self._log(f"  [{ts}]  Iniciando ExpenseTracker\n\n", "info")
         self._log("  🔐  Verificando sesión de Google…\n", "dim")
         self._log("      Si el token expiró, el navegador abrirá una ventana de Google\n\n", "dim")
 
-        t = threading.Thread(target=self._run_tracker_thread)
+        t = threading.Thread(target=self._run_tracker_thread,
+                             args=(include_read,))
         t.daemon = True
         t.start()
         self.tracker_thread = t
 
-    def _run_tracker_thread(self):
+    def _run_tracker_thread(self, include_read: bool = False):
         try:
             import io, contextlib
             buf = io.StringIO()
             with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
                 tracker = ExpenseTracker()
-                results = tracker.process_expenses()
+                results = tracker.process_expenses(include_read=include_read)
             self.root.after(0, self._tracker_completed, buf.getvalue(), results)
         except Exception as e:
             self.root.after(0, self._tracker_error, str(e))

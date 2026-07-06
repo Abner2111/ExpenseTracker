@@ -15,6 +15,7 @@ from expense_parser import ExpenseParser
 from sheets_manager import SheetsManager
 from models import ProcessingResult
 from database import ExpenseDatabase
+from email_history import EmailHistoryDB
 
 # Initialize logger
 logger = get_logger()
@@ -32,6 +33,7 @@ class ExpenseTracker:
             self.expense_parser = ExpenseParser()
             self.sheets_manager = SheetsManager()
             self.db = ExpenseDatabase()
+            self.history = EmailHistoryDB()
             
             logger.info("ExpenseTracker initialized successfully")
             
@@ -39,10 +41,13 @@ class ExpenseTracker:
             logger.error(f"Failed to initialize ExpenseTracker: {e}")
             raise
     
-    def process_expenses(self) -> List[ProcessingResult]:
+    def process_expenses(self, include_read: bool = False) -> List[ProcessingResult]:
         """
         Main processing workflow: fetch emails, parse expenses, add to sheets
-        
+
+        Args:
+            include_read: If True, fetch read + unread emails (recovery mode)
+
         Returns:
             List of ProcessingResult objects for each processed expense
         """
@@ -52,32 +57,48 @@ class ExpenseTracker:
         try:
             # Step 1: Fetch emails
             logger.info("Step 1: Fetching emails from Gmail")
-            emails = self.email_parser.fetch_bac_emails()
+            emails = self.email_parser.fetch_bac_emails(
+                include_read=include_read
+            )
             logger.info(f"Found {len(emails)} emails to process")
             
             if not emails:
                 logger.info("No emails found to process")
                 return results
-            
+
             # Step 2: Process each email
             logger.info("Step 2: Processing emails and extracting expenses")
-            expenses = []
-            
+            expenses       = []
+            emails_to_mark = []
+
             for email_data in emails:
+                # ── Idempotency check ─────────────────────────────────────
+                if self.history.is_processed(email_data.email_id):
+                    logger.info(f"Skipping already-processed email {email_data.email_id}")
+                    self.history.log(email_data.email_id, status='skipped')
+                    results.append(ProcessingResult(
+                        success=True,
+                        message=f"Skipped (already processed): {email_data.email_id}",
+                    ))
+                    continue
+
                 try:
                     logger.debug(f"Processing email {email_data.email_id}")
-                    
-                    # Parse expense from email
+
                     expense = self.expense_parser.parse_expense_from_email(
-                        email_data.body, 
+                        email_data.body,
                         email_data.email_id
                     )
-                    
+
                     expenses.append(expense)
+                    emails_to_mark.append(email_data)
                     logger.debug(f"Successfully parsed expense: {expense.vendor} - {expense.get_display_amount()}")
-                    
+
                 except Exception as e:
                     logger.error(f"Failed to parse expense from email {email_data.email_id}: {e}")
+                    self.history.log(
+                        email_data.email_id, status='error', error_reason=str(e)
+                    )
                     results.append(ProcessingResult(
                         success=False,
                         message=f"Failed to parse email {email_data.email_id}",
@@ -85,27 +106,47 @@ class ExpenseTracker:
                     ))
             
             logger.info(f"Successfully parsed {len(expenses)} expenses")
-            
+
             # Step 3: Add expenses to Google Sheets
             if expenses:
                 logger.info("Step 3: Adding expenses to Google Sheets")
-                
+
                 if len(expenses) > 1:
-                    # Use batch operation for multiple expenses
                     sheet_results = self.sheets_manager.batch_add_expenses(expenses)
                     results.extend(sheet_results)
                 else:
-                    # Single expense
                     sheet_result = self.sheets_manager.add_expense_to_sheet(expenses[0])
                     results.append(sheet_result)
-            
-            # Step 4: Mark emails as processed (optional)
-            logger.info("Step 4: Marking processed emails")
-            for email_data in emails:
+
+                # Log each expense outcome to the history DB
+                for expense, sheet_res in zip(expenses, results[-len(expenses):]):
+                    if sheet_res.success:
+                        self.history.log(
+                            expense.email_id,
+                            status='success',
+                            vendor=expense.vendor,
+                            amount=expense.amount,
+                            currency=expense.currency,
+                            original_amount=expense.original_amount,
+                            original_currency=expense.original_currency,
+                            category=expense.category,
+                            expense_date=str(expense.date),
+                        )
+                    else:
+                        self.history.log(
+                            expense.email_id,
+                            status='error',
+                            vendor=expense.vendor,
+                            error_reason=sheet_res.error,
+                        )
+
+            # Step 4: Mark emails as read in Gmail
+            logger.info("Step 4: Marking processed emails as read")
+            for email_data in emails_to_mark:
                 try:
                     self.email_parser.mark_email_as_processed(email_data.email_id)
                 except Exception as e:
-                    logger.warning(f"Failed to mark email {email_data.email_id} as processed: {e}")
+                    logger.warning(f"Failed to mark email {email_data.email_id} as read: {e}")
             
             logger.info(f"Expense processing completed. Processed {len(results)} items")
             return results
