@@ -81,66 +81,46 @@ class SheetsManager:
             raise GoogleSheetsError(f"Sheets authentication failed: {e}")
     
     def add_expense_to_sheet(self, expense: Expense) -> ProcessingResult:
-        """
-        Add expense to Google Sheets
-        
-        Args:
-            expense: Expense object to add
-            
-        Returns:
-            ProcessingResult with success/failure information
-        """
         logger.info(f"Adding expense to sheet: {expense.vendor} - {expense.get_display_amount()}")
-        
         try:
-            # Format expense data for sheets
-            row_data = self._format_expense_for_sheets(expense)
-            
-            # Get the sheet configuration
             sheet_id = self.config.google_sheet_id
-            range_name = f"{self.config.google_sheet_tab}!B:E"  # Original format: B=Date, C=Amount, D=Vendor, E=Category
-            
-            # Prepare the request
-            values = [row_data]
-            body = {
-                'values': values,
-                'majorDimension': 'ROWS'
-            }
-            
-            # Append to sheet
-            logger.debug(f"Appending to sheet {sheet_id}, range {range_name}")
-            result = self.service.spreadsheets().values().append(
+            tab_id   = self._get_tab_sheet_id(sheet_id)
+
+            # Find the last data row and insert a blank row after it.
+            # Sheets copies the format from the row above → date/currency cells
+            # keep their format; we only write plain values.
+            last_row_idx = self._get_last_data_row(sheet_id)  # 0-based
+            self._insert_blank_rows(sheet_id, tab_id, last_row_idx)
+
+            new_row = last_row_idx + 1   # 1-based sheet row
+            row_data = self._format_expense_for_sheets(expense)
+            range_name = f"{self.config.google_sheet_tab}!B{new_row}"
+
+            result = self.service.spreadsheets().values().update(
                 spreadsheetId=sheet_id,
                 range=range_name,
                 valueInputOption='USER_ENTERED',
-                insertDataOption='INSERT_ROWS',
-                body=body
+                body={'values': [row_data]},
             ).execute()
-            
-            # Get information about the inserted row
-            updates = result.get('updates', {})
-            updated_range = updates.get('updatedRange', 'Unknown')
-            updated_rows = updates.get('updatedRows', 0)
-            
-            logger.info(f"Successfully added expense to sheet. Range: {updated_range}, Rows: {updated_rows}")
-            
+
+            updated_range = result.get('updatedRange', range_name)
+            logger.info(f"Added expense to sheet at {updated_range}")
+
             return ProcessingResult(
                 success=True,
                 message=f"Added to sheet: {expense.vendor} - {expense.get_display_amount()}",
                 details={
                     'updated_range': updated_range,
-                    'updated_rows': updated_rows,
-                    'sheet_id': sheet_id,
-                    'expense_id': expense.email_id
+                    'sheet_id':  sheet_id,
+                    'expense_id': expense.email_id,
                 }
             )
-            
         except Exception as e:
             logger.error(f"Failed to add expense to sheet: {e}")
             return ProcessingResult(
                 success=False,
-                message=f"Failed to add expense to sheet: {str(e)}",
-                error=str(e)
+                message=f"Failed to add expense to sheet: {e}",
+                error=str(e),
             )
     
     def _format_expense_for_sheets(self, expense: Expense) -> List[Any]:
@@ -154,11 +134,11 @@ class SheetsManager:
         Returns:
             List of values for sheet row
         """
-        # Format date as string
-        date_str = expense.date.strftime('%Y-%m-%d')
-        
-        # Format amount as number (not string) for spreadsheet calculations
-        amount_value = expense.amount
+        # Format date — use MM/DD/YYYY (unambiguous for USER_ENTERED)
+        date_str = expense.date.strftime('%m/%d/%Y')
+
+        # Amount as plain number — cell inherits currency format from the row above
+        amount_value = round(expense.amount, 2)
         
         # Create the row data matching original format (B, C, D, E)
         row_data = [
@@ -171,6 +151,47 @@ class SheetsManager:
         logger.debug(f"Formatted expense row: {row_data}")
         return row_data
     
+    # ── Format-preserving helpers ────────────────────────────────────────────
+
+    def _get_tab_sheet_id(self, spreadsheet_id: str) -> int:
+        """Return the numeric sheetId for the configured tab name."""
+        meta = self.service.spreadsheets().get(
+            spreadsheetId=spreadsheet_id
+        ).execute()
+        for sheet in meta.get('sheets', []):
+            props = sheet.get('properties', {})
+            if props.get('title') == self.config.google_sheet_tab:
+                return props['sheetId']
+        raise GoogleSheetsError(
+            f"Tab '{self.config.google_sheet_tab}' not found in spreadsheet"
+        )
+
+    def _get_last_data_row(self, spreadsheet_id: str) -> int:
+        """Return the 0-based index of the row AFTER the last data row in col B."""
+        result = self.service.spreadsheets().values().get(
+            spreadsheetId=spreadsheet_id,
+            range=f"{self.config.google_sheet_tab}!B:B",
+        ).execute()
+        return len(result.get('values', []))
+
+    def _insert_blank_rows(self, spreadsheet_id: str, tab_id: int,
+                           after_index: int, count: int = 1):
+        """Insert `count` blank rows at `after_index` (0-based), inheriting format from the row above."""
+        self.service.spreadsheets().batchUpdate(
+            spreadsheetId=spreadsheet_id,
+            body={'requests': [{
+                'insertDimension': {
+                    'range': {
+                        'sheetId':    tab_id,
+                        'dimension':  'ROWS',
+                        'startIndex': after_index,
+                        'endIndex':   after_index + count,
+                    },
+                    'inheritFromBefore': True,
+                }
+            }]}
+        ).execute()
+
     def verify_sheet_access(self) -> ProcessingResult:
         """
         Verify that we can access the configured Google Sheet
@@ -260,76 +281,52 @@ class SheetsManager:
             return {'error': str(e)}
     
     def batch_add_expenses(self, expenses: List[Expense]) -> List[ProcessingResult]:
-        """
-        Add multiple expenses to the sheet in a batch operation
-        
-        Args:
-            expenses: List of expense objects to add
-            
-        Returns:
-            List of ProcessingResult objects
-        """
         logger.info(f"Batch adding {len(expenses)} expenses to sheet")
-        
         if not expenses:
             return []
-        
         results = []
-        
         try:
-            # Format all expenses for sheets
-            all_rows = []
-            for expense in expenses:
-                row_data = self._format_expense_for_sheets(expense)
-                all_rows.append(row_data)
-            
-            # Prepare batch request
             sheet_id = self.config.google_sheet_id
-            range_name = f"{self.config.google_sheet_tab}!B:E"  # Original format: B=Date, C=Amount, D=Vendor, E=Category
-            
-            body = {
-                'values': all_rows,
-                'majorDimension': 'ROWS'
-            }
-            
-            # Execute batch append
-            result = self.service.spreadsheets().values().append(
+            tab_id   = self._get_tab_sheet_id(sheet_id)
+            n        = len(expenses)
+
+            # Insert n blank rows at once after the last data row
+            last_row_idx = self._get_last_data_row(sheet_id)  # 0-based
+            self._insert_blank_rows(sheet_id, tab_id, last_row_idx, count=n)
+
+            # Write all values in one call
+            first_new_row = last_row_idx + 1  # 1-based
+            all_rows   = [self._format_expense_for_sheets(e) for e in expenses]
+            range_name = f"{self.config.google_sheet_tab}!B{first_new_row}"
+
+            result = self.service.spreadsheets().values().update(
                 spreadsheetId=sheet_id,
                 range=range_name,
                 valueInputOption='USER_ENTERED',
-                insertDataOption='INSERT_ROWS',
-                body=body
+                body={'values': all_rows},
             ).execute()
-            
-            # Create success results for all expenses
-            updates = result.get('updates', {})
-            updated_range = updates.get('updatedRange', 'Unknown')
-            updated_rows = updates.get('updatedRows', 0)
-            
+
+            updated_range = result.get('updatedRange', range_name)
+            logger.info(f"Batch added {n} expenses at {updated_range}")
+
             for i, expense in enumerate(expenses):
                 results.append(ProcessingResult(
                     success=True,
                     message=f"Batch added: {expense.vendor} - {expense.get_display_amount()}",
                     details={
                         'batch_operation': True,
-                        'batch_size': len(expenses),
+                        'batch_size': n,
                         'batch_index': i,
                         'updated_range': updated_range,
-                        'total_updated_rows': updated_rows,
-                        'expense_id': expense.email_id
+                        'expense_id': expense.email_id,
                     }
                 ))
-            
-            logger.info(f"Successfully batch added {len(expenses)} expenses. Updated range: {updated_range}")
-            
         except Exception as e:
             logger.error(f"Batch add failed: {e}")
-            # Create failure results for all expenses
             for expense in expenses:
                 results.append(ProcessingResult(
                     success=False,
-                    message=f"Batch add failed: {expense.vendor} - {expense.get_display_amount()}",
-                    error=str(e)
+                    message=f"Batch add failed: {e}",
+                    error=str(e),
                 ))
-        
         return results
