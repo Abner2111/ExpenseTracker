@@ -1,0 +1,17 @@
+[Unit]
+Description=ExpenseTracker Web UI
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pep
+WorkingDirectory=/home/pep/ExpenseTracker/src
+Environment=WEB_UI_USERNAME=pep
+Environment=WEB_UI_PASSWORD=CHANGE_ME
+ExecStart=/home/pep/ExpenseTracker/.venv/bin/uvicorn web.app:app --host 0.0.0.0 --port 8000
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %} - Rules{% endblock %}
+{% block content %}
+<h2>Reglas de categorización</h2>
+
+<div class="card">
+  <strong>Agregar regla</strong>
+  <form method="post" action="/db/rules/add">
+    <label>Tipo</label>
+    <select name="rule_type">
+      {% for rt in rule_types %}
+      <option value="{{ rt }}">{{ rt }}</option>
+      {% endfor %}
+    </select>
+    <label>Patrón</label>
+    <input type="text" name="pattern" required>
+    <label>Categoría</label>
+    <input type="text" name="category" required>
+    <label>Prioridad</label>
+    <input type="number" name="priority" value="1">
+    <button type="submit">Agregar</button>
+  </form>
+</div>
+
+<table>
+  <thead>
+    <tr><th>Tipo</th><th>Patrón / Categoría / Prioridad</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for id, rule_type, pattern, category, priority in rules %}
+    <tr>
+      <td>{{ rule_type }}</td>
+      <td>
+        <form method="post" action="/db/rules/edit" class="inline" style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+          <input type="hidden" name="rule_id" value="{{ id }}">
+          <select name="rule_type" style="width:auto">
+            {% for rt in rule_types %}
+            <option value="{{ rt }}" {{ "selected" if rt == rule_type else "" }}>{{ rt }}</option>
+            {% endfor %}
+          </select>
+          <input type="text" name="pattern" value="{{ pattern }}" style="width:140px">
+          <input type="text" name="category" value="{{ category }}" style="width:120px">
+          <input type="number" name="priority" value="{{ priority }}" style="width:70px">
+          <button type="submit" class="secondary">Guardar</button>
+        </form>
+      </td>
+      <td>
+        <form method="post" action="/db/rules/delete" class="inline" onsubmit="return confirm('¿Eliminar esta regla?')">
+          <input type="hidden" name="rule_id" value="{{ id }}">
+          <button type="submit" class="danger">Eliminar</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="card">
+  <strong>Categorías</strong>
+  <ul>
+    {% for c in categories %}<li>{{ c }}</li>{% endfor %}
+  </ul>
+  <form method="post" action="/db/categories/add">
+    <label>Nueva categoría</label>
+    <input type="text" name="name" required>
+    <label>Descripción</label>
+    <input type="text" name="description">
+    <button type="submit">Agregar categoría</button>
+  </form>
+</div>
+{% endblock %}

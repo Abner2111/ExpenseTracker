@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %} - Vendors{% endblock %}
+{% block content %}
+<h2>Vendors</h2>
+
+<form method="get" action="/db/vendors" class="toolbar">
+  <div>
+    <label>Buscar</label>
+    <input type="text" name="q" value="{{ q }}" placeholder="keyword, vendor o categoría">
+  </div>
+  <button type="submit">Buscar</button>
+</form>
+
+<div class="card">
+  <strong>Agregar vendor</strong>
+  <form method="post" action="/db/vendors/add">
+    <label>Keyword</label>
+    <input type="text" name="keyword" required>
+    <label>Nombre del vendor</label>
+    <input type="text" name="vendor_name" required>
+    <label>Categoría</label>
+    <input type="text" name="category">
+    <button type="submit">Agregar</button>
+  </form>
+</div>
+
+<table>
+  <thead>
+    <tr><th>Keyword</th><th>Vendor</th><th>Categoría</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for id, keyword, vendor_name, category in vendors %}
+    <tr>
+      <td>{{ keyword }}</td>
+      <td colspan="2">
+        <form method="post" action="/db/vendors/edit" class="inline" style="display:flex; gap:0.4rem;">
+          <input type="hidden" name="keyword" value="{{ keyword }}">
+          <input type="text" name="vendor_name" value="{{ vendor_name }}" style="width:140px">
+          <input type="text" name="category" value="{{ category }}" style="width:120px">
+          <button type="submit" class="secondary">Guardar</button>
+        </form>
+      </td>
+      <td>
+        <form method="post" action="/db/vendors/delete" class="inline" onsubmit="return confirm('¿Eliminar {{ keyword }}?')">
+          <input type="hidden" name="keyword" value="{{ keyword }}">
+          <button type="submit" class="danger">Eliminar</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %} - History{% endblock %}
+{% block content %}
+<h2>Historial de emails</h2>
+
+<div class="stat-row">
+  <div class="stat-tile"><div class="value">{{ stats.total }}</div><div class="label">Total</div></div>
+  <div class="stat-tile"><div class="value">{{ stats.success }}</div><div class="label">Exitosos</div></div>
+  <div class="stat-tile"><div class="value">{{ stats.skipped }}</div><div class="label">Omitidos</div></div>
+  <div class="stat-tile"><div class="value">{{ stats.errors }}</div><div class="label">Errores</div></div>
+</div>
+
+<form method="get" action="/db/history" class="toolbar">
+  <div>
+    <label>Estado</label>
+    <select name="status">
+      <option value="" {{ "selected" if status == "" else "" }}>Todos</option>
+      <option value="success" {{ "selected" if status == "success" else "" }}>success</option>
+      <option value="error" {{ "selected" if status == "error" else "" }}>error</option>
+      <option value="skipped" {{ "selected" if status == "skipped" else "" }}>skipped</option>
+    </select>
+  </div>
+  <div>
+    <label>Buscar (email_id o vendor)</label>
+    <input type="text" name="q" value="{{ q }}">
+  </div>
+  <button type="submit">Filtrar</button>
+</form>
+
+<table>
+  <thead>
+    <tr>
+      <th>Email ID</th><th>Vendor</th><th>Monto original</th><th>Monto</th>
+      <th>Categoría</th><th>Fecha</th><th>Estado</th><th>Error</th><th>Procesado</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for email_id, vendor, original_amount, original_currency, amount, category, expense_date, row_status, error_reason, processed_at in rows %}
+    <tr>
+      <td>{{ email_id }}</td>
+      <td>{{ vendor or "" }}</td>
+      <td>{{ original_amount ~ " " ~ original_currency if original_amount else "" }}</td>
+      <td>{{ amount or "" }}</td>
+      <td>{{ category or "" }}</td>
+      <td>{{ expense_date or "" }}</td>
+      <td><span class="badge {{ row_status }}">{{ row_status }}</span></td>
+      <td>{{ error_reason or "" }}</td>
+      <td>{{ processed_at }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

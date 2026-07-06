@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ExpenseTracker{% block title %}{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="layout">
+    <nav class="sidebar">
+      <h1>ExpenseTracker</h1>
+      <a class="nav-link {{ 'active' if active_page == 'run' else '' }}" href="/run">▶ Run</a>
+      <a class="nav-link {{ 'active' if active_page == 'config' else '' }}" href="/config">⚙ Config</a>
+      <a class="nav-link {{ 'active' if active_page == 'status' else '' }}" href="/status">● Status</a>
+      <div class="nav-group">Database</div>
+      <a class="nav-link {{ 'active' if active_page == 'db_vendors' else '' }}" href="/db/vendors">Vendors</a>
+      <a class="nav-link {{ 'active' if active_page == 'db_rules' else '' }}" href="/db/rules">Rules</a>
+      <a class="nav-link {{ 'active' if active_page == 'db_test' else '' }}" href="/db/test">Test</a>
+      <a class="nav-link {{ 'active' if active_page == 'db_history' else '' }}" href="/db/history">History</a>
+    </nav>
+    <main class="content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</body>
+</html>

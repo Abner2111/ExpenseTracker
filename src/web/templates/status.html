@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %} - Status{% endblock %}
+{% block content %}
+<h2>Estado del sistema</h2>
+
+<div class="stat-row">
+  <div class="stat-tile">
+    <div class="value">{{ "✅" if checks.credentials else "❌" }}</div>
+    <div class="label">credentials.json</div>
+  </div>
+  <div class="stat-tile">
+    <div class="value">{{ "✅" if checks.config else "❌" }}</div>
+    <div class="label">Sheet configurado</div>
+  </div>
+  <div class="stat-tile">
+    <div class="value">{{ "✅" if checks.database else "❌" }}</div>
+    <div class="label">Base de datos</div>
+  </div>
+</div>
+
+<div class="card">
+  <form method="post" action="/status/verify">
+    <button type="submit">🔄 Verify Setup (Gmail + Sheets, en vivo)</button>
+  </form>
+</div>
+
+{% if verify_error %}
+<div class="msg error">{{ verify_error }}</div>
+{% endif %}
+
+{% if verify_result %}
+<div class="card">
+  <strong>Resultado de verificación</strong>
+  <p class="{{ 'msg success' if verify_result.success else 'msg error' }}">{{ verify_result.message }}</p>
+  {% if verify_result.details %}
+  <ul>
+    {% for k, v in verify_result.details.items() %}
+    <li>{{ k }}: {{ v }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% if verify_result.error %}<p style="color: var(--error)">{{ verify_result.error }}</p>{% endif %}
+</div>
+{% endif %}
+
+{% if system_status %}
+<div class="card">
+  <strong>System status</strong>
+  <pre style="white-space: pre-wrap; font-size: 0.85rem;">{{ system_status }}</pre>
+</div>
+{% endif %}
+{% endblock %}

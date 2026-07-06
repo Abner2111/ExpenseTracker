@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %} - Test{% endblock %}
+{% block content %}
+<h2>Probar clasificador</h2>
+
+<div class="card">
+  <form method="post" action="/db/test">
+    <label>Texto de email o descripción</label>
+    <textarea name="text" rows="4" required>{{ text }}</textarea>
+    <button type="submit">Probar</button>
+  </form>
+</div>
+
+{% if vendor is not none %}
+<div class="card">
+  <p><strong>Vendor:</strong> {{ vendor }}</p>
+  <p><strong>Categoría:</strong> {{ category }}</p>
+</div>
+{% endif %}
+{% endblock %}

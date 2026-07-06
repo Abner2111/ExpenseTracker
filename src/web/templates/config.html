@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %} - Config{% endblock %}
+{% block content %}
+<h2>Configuración</h2>
+
+{% if saved %}<div class="msg success">Guardado correctamente</div>{% endif %}
+{% if error %}<div class="msg error">{{ error }}</div>{% endif %}
+
+<div class="card">
+  <form method="post" action="/config">
+    <label>Google Sheet URL o ID</label>
+    <input type="text" name="sheet_id" id="sheet_id" value="{{ config.google_sheet_id }}" required>
+    <div id="validate-msg" style="font-size:0.82rem; margin-top:0.3rem;"></div>
+
+    <label>Nombre de la pestaña</label>
+    <input type="text" name="sheet_tab" value="{{ config.google_sheet_tab }}">
+
+    <label>Filtro por mes (ej. 2026/07, o vacío para todos)</label>
+    <input type="text" name="filter_by_month" value="{{ config.filter_by_month or '' }}">
+
+    <button type="button" class="secondary" onclick="validateId()">Validar ID</button>
+    <button type="submit">💾 Guardar</button>
+  </form>
+</div>
+
+<script>
+async function validateId() {
+  const input = document.getElementById("sheet_id");
+  const msgBox = document.getElementById("validate-msg");
+  const form = new FormData();
+  form.append("sheet_id", input.value);
+  const res = await fetch("/config/validate", { method: "POST", body: form });
+  const data = await res.json();
+  msgBox.textContent = data.message;
+  msgBox.style.color = data.valid ? "var(--success)" : "var(--error)";
+}
+</script>
+{% endblock %}

@@ -5,7 +5,7 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-User=CHANGE_ME_username
-WorkingDirectory=/home/CHANGE_ME_username/ExpenseTracker/src
-ExecStart=/home/CHANGE_ME_username/ExpenseTracker/.venv/bin/python main.py
+User=pep
+WorkingDirectory=/home/pep/ExpenseTracker/src
+ExecStart=/home/pep/ExpenseTracker/.venv/bin/python main.py
 TimeoutStartSec=300

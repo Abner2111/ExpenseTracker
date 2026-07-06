@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %} - Run{% endblock %}
+{% block content %}
+<h2>Run Tracker</h2>
+
+<div class="card">
+  <strong>Configuración activa</strong>
+  <p style="color: var(--text-muted); font-size: 0.88rem; margin: 0.4rem 0 0;">
+    Sheet: {{ config.google_sheet_id or "(no configurado)" }} · Tab: {{ config.google_sheet_tab }} · Mes: {{ config.filter_by_month or "todos" }}
+  </p>
+</div>
+
+<div class="card">
+  <form id="run-form" method="post" action="/run/start">
+    <label><input type="checkbox" name="include_read" value="true" style="width:auto"> Incluir emails ya leídos</label>
+    <button type="submit" id="run-btn" {{ "disabled" if running else "" }}>▶ Ejecutar Tracker</button>
+  </form>
+</div>
+
+{% if result %}
+<div class="card">
+  <strong>Último resultado</strong>
+  {% set ok = result | selectattr("success") | list | length %}
+  <p>{{ ok }} exitosos, {{ result|length - ok }} con error</p>
+  <ul>
+  {% for r in result %}
+    <li>{{ "OK" if r.success else "ERROR" }} - {{ r.message }}{% if r.error %} ({{ r.error }}){% endif %}</li>
+  {% endfor %}
+  </ul>
+</div>
+{% endif %}
+{% if error %}
+<div class="msg error">{{ error }}</div>
+{% endif %}
+
+<div class="card">
+  <strong>Logs</strong>
+  <div class="log-box" id="log-box">{{ logs|join('\n') }}</div>
+</div>
+
+<script>
+  const logBox = document.getElementById("log-box");
+  const runBtn = document.getElementById("run-btn");
+  logBox.scrollTop = logBox.scrollHeight;
+
+  const running = {{ "true" if running else "false" }};
+  if (running) {
+    runBtn.disabled = true;
+    const src = new EventSource("/run/stream?offset={{ logs|length }}");
+    src.onmessage = (e) => {
+      logBox.textContent += (logBox.textContent ? "\n" : "") + e.data;
+      logBox.scrollTop = logBox.scrollHeight;
+    };
+    src.addEventListener("done", () => {
+      src.close();
+      window.location.reload();
+    });
+  }
+</script>
+{% endblock %}

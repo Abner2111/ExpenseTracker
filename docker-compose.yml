@@ -1,0 +1,80 @@
+name: expensetracker
+services:
+  web:
+    build: .
+    image: expense-tracker:latest
+    container_name: expense-tracker-web
+    restart: unless-stopped
+    environment:
+      - WEB_UI_USERNAME=pep
+      - WEB_UI_PASSWORD=CHANGE_ME
+    ports:
+      - target: 8000
+        published: "8000"
+        protocol: tcp
+    volumes:
+      - type: bind
+        source: ./data
+        target: /app/data
+      - type: bind
+        source: ./src/config.py
+        target: /app/src/config.py
+      - type: bind
+        source: ./src/credentials.json
+        target: /app/src/credentials.json
+      - type: bind
+        source: ./src/token.pickle
+        target: /app/src/token.pickle
+      - type: bind
+        source: ./src/logs
+        target: /app/src/logs
+    x-casaos:
+      ports:
+        - container: "8000"
+          description:
+            en_US: Web UI port
+
+  scheduler:
+    build: .
+    image: expense-tracker:latest
+    container_name: expense-tracker-scheduler
+    restart: unless-stopped
+    command: ["python", "scheduler.py"]
+    environment:
+      - RUN_HOUR=7
+      - RUN_MINUTE=0
+    volumes:
+      - type: bind
+        source: ./data
+        target: /app/data
+      - type: bind
+        source: ./src/config.py
+        target: /app/src/config.py
+      - type: bind
+        source: ./src/credentials.json
+        target: /app/src/credentials.json
+      - type: bind
+        source: ./src/token.pickle
+        target: /app/src/token.pickle
+      - type: bind
+        source: ./src/logs
+        target: /app/src/logs
+
+x-casaos:
+  id: com.abner.expensetracker
+  architectures:
+    - amd64
+    - arm64
+  main: web
+  category: Finance
+  developer: abner
+  author: abner
+  title:
+    en_US: ExpenseTracker
+  tagline:
+    en_US: BAC Credomatic email expense tracker with Google Sheets sync
+  description:
+    en_US: Automated expense tracking from BAC Credomatic emails to Google Sheets, with a web UI for running the tracker, managing categorization rules, and reviewing processing history.
+  scheme: http
+  port_map: "8000"
+  index: /
