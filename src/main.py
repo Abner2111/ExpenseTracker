@@ -179,7 +179,7 @@ class ExpenseTracker:
                     error=gmail_result.error
                 )
             
-            # Verify Sheets access
+            # Verify Sheets access (sheet may have just been auto-created)
             sheets_result = self.sheets_manager.verify_sheet_access()
             if not sheets_result.success:
                 return ProcessingResult(
@@ -187,6 +187,11 @@ class ExpenseTracker:
                     message="Google Sheets verification failed", 
                     error=sheets_result.error
                 )
+
+            # If a new sheet was created this run, surface its URL in the result
+            new_sheet_url = getattr(self.sheets_manager, 'created_sheet_url', None)
+            if new_sheet_url:
+                logger.info(f"New spreadsheet URL: {new_sheet_url}")
             
             # Verify database
             vendor_count = len(self.db.get_all_vendors())

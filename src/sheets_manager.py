@@ -5,8 +5,9 @@ Handles adding expenses to Google Sheets
 
 import pickle
 import os
+import re
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Tuple
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -21,10 +22,16 @@ logger = get_logger()
 
 class SheetsManager:
     """Manages Google Sheets integration for expense tracking"""
-    
-    # Google Sheets scopes
-    SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-    
+
+    # OAuth scopes — Sheets + Drive (needed to copy template & manage folder)
+    SCOPES = [
+        'https://www.googleapis.com/auth/spreadsheets',
+        'https://www.googleapis.com/auth/drive',
+    ]
+
+    # Template to copy when no spreadsheet has been configured yet
+    TEMPLATE_ID     = '13P4kQm1xVlvnLSrm4Pv-mfW6t3KZyMYmIachqVDQtYU'
+    DRIVE_FOLDER    = 'ExpenseTracker'
     def __init__(self):
         self.config = ConfigManager.get_config()
         self.credentials = None
@@ -79,7 +86,138 @@ class SheetsManager:
         except Exception as e:
             logger.error(f"Failed to initialize Google Sheets credentials: {e}")
             raise GoogleSheetsError(f"Sheets authentication failed: {e}")
-    
+        
+        # Auto-create a spreadsheet if none is configured
+        self._ensure_spreadsheet_exists()
+
+    # ── Monthly-sheet helpers ─────────────────────────────────────────────────
+
+    def _get_target_month_key(self) -> str:
+        """Return 'YYYY-MM' for the target month (from FILTER_BY_MONTH or today)."""
+        fm = self.config.filter_by_month  # e.g. "2026/07"
+        if fm:
+            try:
+                parts = fm.replace('-', '/').split('/')
+                if len(parts) == 2:
+                    return f"{parts[0]}-{parts[1].zfill(2)}"
+            except Exception:
+                pass
+        return datetime.now().strftime('%Y-%m')
+
+    def _ensure_spreadsheet_exists(self):
+        """Resolve the spreadsheet for the current/configured month.
+        Searches the ExpenseTracker Drive folder for 'Expense Tracker YYYY-MM';
+        creates a copy of the template if none exists yet.
+        Always updates self.config.google_sheet_id for this run.
+        """
+        month_key  = self._get_target_month_key()        # e.g. "2026-07"
+        sheet_name = f"Expense Tracker {month_key}"
+
+        drive     = build('drive', 'v3', credentials=self.credentials)
+        folder_id = self._get_or_create_drive_folder(drive, self.DRIVE_FOLDER)
+
+        existing_id = self._find_sheet_in_folder(drive, folder_id, sheet_name)
+        if existing_id:
+            logger.info(f"Reusing existing sheet for {month_key}: {existing_id}")
+            self.config.google_sheet_id = existing_id
+            self._save_sheet_id_to_config(existing_id)
+            return
+
+        # No sheet for this month yet — copy the template
+        logger.info(f"No sheet found for {month_key} — copying template")
+        sheet_id, sheet_url, tab_names = self._copy_template(drive, folder_id, sheet_name)
+        self._save_sheet_id_to_config(sheet_id)
+        self.config.google_sheet_id = sheet_id
+        self.created_sheet_url      = sheet_url
+        logger.info(f"New sheet for {month_key}: {sheet_url}")
+        logger.info(f"Tabs: {tab_names}")
+        print(f"\n✓ Google Sheet for {month_key} created: {sheet_url}\n")
+
+    def _find_sheet_in_folder(self, drive_service, folder_id: str, name: str) -> Optional[str]:
+        """Search for a spreadsheet by exact name inside a Drive folder. Returns ID or None."""
+        q = (
+            f"name='{name}' "
+            f"and '{folder_id}' in parents "
+            "and mimeType='application/vnd.google-apps.spreadsheet' "
+            "and trashed=false"
+        )
+        res   = drive_service.files().list(q=q, fields='files(id,name)').execute()
+        files = res.get('files', [])
+        return files[0]['id'] if files else None
+
+    def _copy_template(self, drive_service, folder_id: str, name: str) -> Tuple[str, str, List[str]]:
+        """Copy the template spreadsheet into folder_id with the given name.
+        Returns (sheet_id, url, tab_names)."""
+        copy = drive_service.files().copy(
+            fileId=self.TEMPLATE_ID,
+            body={'name': name, 'parents': [folder_id]},
+            fields='id,webViewLink',
+        ).execute()
+
+        sheet_id  = copy['id']
+        sheet_url = copy.get(
+            'webViewLink',
+            f'https://docs.google.com/spreadsheets/d/{sheet_id}',
+        )
+        logger.info(f"Copied template → '{name}' (id={sheet_id})")
+
+        # Discover tabs from the copy
+        meta      = self.service.spreadsheets().get(spreadsheetId=sheet_id).execute()
+        tab_names = [s['properties']['title'] for s in meta.get('sheets', [])]
+
+        # Fall back to first tab if the configured tab name isn't present
+        if self.config.google_sheet_tab not in tab_names and tab_names:
+            logger.info(
+                f"Configured tab '{self.config.google_sheet_tab}' not in template; "
+                f"using '{tab_names[0]}'"
+            )
+            self.config.google_sheet_tab = tab_names[0]
+
+        return sheet_id, sheet_url, tab_names
+
+    def _get_or_create_drive_folder(self, drive_service, folder_name: str) -> str:
+        """Find an existing Drive folder by name, or create it. Returns folder ID."""
+        q = (
+            f"name='{folder_name}' "
+            "and mimeType='application/vnd.google-apps.folder' "
+            "and trashed=false"
+        )
+        res   = drive_service.files().list(q=q, fields='files(id,name)').execute()
+        files = res.get('files', [])
+        if files:
+            fid = files[0]['id']
+            logger.info(f"Using existing Drive folder '{folder_name}': {fid}")
+            return fid
+
+        folder = drive_service.files().create(
+            body={
+                'name':     folder_name,
+                'mimeType': 'application/vnd.google-apps.folder',
+            },
+            fields='id',
+        ).execute()
+        fid = folder['id']
+        logger.info(f"Created Drive folder '{folder_name}': {fid}")
+        return fid
+
+    def _save_sheet_id_to_config(self, sheet_id: str):
+        """Write the new spreadsheet ID back to config.py so it persists across restarts."""
+        config_path = os.path.join(self.config.src_dir, 'config.py')
+        try:
+            with open(config_path, 'r') as f:
+                content = f.read()
+            updated = re.sub(
+                r'^(SPREADSHEET_ID\s*=\s*)["\'].*?["\']',
+                f'SPREADSHEET_ID = "{sheet_id}"',
+                content,
+                flags=re.MULTILINE,
+            )
+            with open(config_path, 'w') as f:
+                f.write(updated)
+            logger.info(f"Saved new SPREADSHEET_ID to config.py")
+        except Exception as e:
+            logger.warning(f"Could not persist spreadsheet ID to config.py: {e}")
+
     def add_expense_to_sheet(self, expense: Expense) -> ProcessingResult:
         logger.info(f"Adding expense to sheet: {expense.vendor} - {expense.get_display_amount()}")
         try:
@@ -176,7 +314,9 @@ class SheetsManager:
 
     def _insert_blank_rows(self, spreadsheet_id: str, tab_id: int,
                            after_index: int, count: int = 1):
-        """Insert `count` blank rows at `after_index` (0-based), inheriting format from the row above."""
+        """Insert `count` blank rows at `after_index` (0-based), inheriting format from the row below.
+        Using inheritFromBefore=False so the first entry (inserted right after the header)
+        picks up the data-row format rather than the header format."""
         self.service.spreadsheets().batchUpdate(
             spreadsheetId=spreadsheet_id,
             body={'requests': [{
@@ -187,7 +327,7 @@ class SheetsManager:
                         'startIndex': after_index,
                         'endIndex':   after_index + count,
                     },
-                    'inheritFromBefore': True,
+                    'inheritFromBefore': False,
                 }
             }]}
         ).execute()
@@ -228,6 +368,7 @@ class SheetsManager:
                 details={
                     'sheet_id': sheet_id,
                     'sheet_title': sheet_title,
+                    'sheet_url': f"https://docs.google.com/spreadsheets/d/{sheet_id}",
                     'tab_name': self.config.google_sheet_tab,
                     'sample_data': values
                 }

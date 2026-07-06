@@ -5,7 +5,9 @@ import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Google Sheets Configuration
-SPREADSHEET_ID = "16DbHNA_79Kaix95rt7XgVX2jb9ldbbdPWV2leRAUKBg"
+# Leave SPREADSHEET_ID empty ("") and the app will create a new sheet automatically
+# on first run and save the generated ID here.
+SPREADSHEET_ID = "1P462_QI7sUrCyVfu1laMWYa_Xca3YJk3H_ALpX11uNU"
 SPREADSHEET_NAME = "Transactions"
 
 # Email Filtering Configuration

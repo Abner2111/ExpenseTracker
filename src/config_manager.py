@@ -111,7 +111,8 @@ class ConfigManager:
         """Get required Google API scopes"""
         return [
             'https://www.googleapis.com/auth/gmail.modify',
-            'https://www.googleapis.com/auth/spreadsheets'
+            'https://www.googleapis.com/auth/spreadsheets',
+            'https://www.googleapis.com/auth/drive',
         ]
     
     def validate_config(self):

@@ -1340,9 +1340,13 @@ class ExpenseTrackerGUI:
         if self.is_running:
             return
         if not self.config.get("google_sheet_id"):
-            messagebox.showerror("Sin configuración",
-                                 "Configura el Google Sheet ID en 'Configuración' primero.")
-            return
+            if not messagebox.askyesno(
+                "Crear Google Sheet",
+                "No hay un Google Sheet configurado.\n\n"
+                "¿Deseas que el app cree uno nuevo automáticamente?\n"
+                "El ID se guardará en config.py para futuros usos."
+            ):
+                return
         if not os.path.exists(os.path.join(os.path.dirname(__file__),
                                             "credentials.json")):
             messagebox.showerror("Credenciales no encontradas",
@@ -1380,15 +1384,28 @@ class ExpenseTrackerGUI:
             with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
                 tracker = ExpenseTracker()
                 results = tracker.process_expenses(include_read=include_read)
-            self.root.after(0, self._tracker_completed, buf.getvalue(), results)
+            new_sheet_url = getattr(
+                getattr(tracker, 'sheets_manager', None), 'created_sheet_url', None
+            )
+            self.root.after(0, self._tracker_completed, buf.getvalue(), results, new_sheet_url)
         except Exception as e:
             self.root.after(0, self._tracker_error, str(e))
 
-    def _tracker_completed(self, output, results):
+    def _tracker_completed(self, output, results, new_sheet_url=None):
         self.is_running = False
         self.run_btn.config(state=tk.NORMAL)
         self.stop_btn.config(state=tk.DISABLED)
         self.progress.stop()
+
+        # If a new sheet was auto-created, reload config and surface the URL
+        if new_sheet_url:
+            self.config = self.load_config()
+            if hasattr(self, 'sheet_id_var'):
+                self.sheet_id_var.set(self.config.get("google_sheet_id", ""))
+            self._update_run_config_display()
+            ts_now = datetime.now().strftime("%H:%M:%S")
+            self._log(f"  [{ts_now}]  \u2728  Nuevo Google Sheet creado:\n", "success")
+            self._log(f"  {new_sheet_url}\n\n", "success")
 
         ts       = datetime.now().strftime("%H:%M:%S")
         ok_list  = [r for r in (results or []) if r.success]
