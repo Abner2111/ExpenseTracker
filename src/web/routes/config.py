@@ -11,6 +11,7 @@ from fastapi import APIRouter, Form, Request
 from fastapi.responses import RedirectResponse
 
 from web.templating import templates
+from web.utils import spreadsheet_url
 
 router = APIRouter()
 
@@ -37,16 +38,19 @@ def load_config() -> dict:
         import config
 
         importlib.reload(config)
+        sheet_id = getattr(config, "SPREADSHEET_ID", "")
         return {
-            "google_sheet_id": getattr(config, "SPREADSHEET_ID", ""),
+            "google_sheet_id": sheet_id,
             "google_sheet_tab": getattr(config, "SPREADSHEET_NAME", "Transactions"),
             "filter_by_month": getattr(config, "FILTER_BY_MONTH", None),
+            "spreadsheet_url": spreadsheet_url(sheet_id),
         }
     except Exception:
         return {
             "google_sheet_id": "",
             "google_sheet_tab": "Transactions",
             "filter_by_month": None,
+            "spreadsheet_url": None,
         }
 
 

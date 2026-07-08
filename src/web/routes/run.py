@@ -6,6 +6,7 @@ from fastapi.responses import RedirectResponse, StreamingResponse
 
 from web.run_state import RunStateLogHandler, run_state
 from web.templating import templates
+from web.utils import spreadsheet_url
 
 router = APIRouter()
 
@@ -36,9 +37,10 @@ def _current_config_summary() -> dict:
             "google_sheet_id": cfg.google_sheet_id,
             "google_sheet_tab": cfg.google_sheet_tab,
             "filter_by_month": cfg.filter_by_month,
+            "spreadsheet_url": spreadsheet_url(cfg.google_sheet_id),
         }
     except Exception:
-        return {"google_sheet_id": "", "google_sheet_tab": "", "filter_by_month": None}
+        return {"google_sheet_id": "", "google_sheet_tab": "", "filter_by_month": None, "spreadsheet_url": None}
 
 
 @router.get("/run")

@@ -6,6 +6,14 @@
 {% if saved %}<div class="msg success">Guardado correctamente</div>{% endif %}
 {% if error %}<div class="msg error">{{ error }}</div>{% endif %}
 
+{% if config.spreadsheet_url %}
+<div class="card">
+  <a href="{{ config.spreadsheet_url }}" target="_blank" rel="noopener">
+    <button type="button" class="secondary">📊 Abrir Spreadsheet ↗</button>
+  </a>
+</div>
+{% endif %}
+
 <div class="card">
   <form method="post" action="/config">
     <label>Google Sheet URL o ID</label>

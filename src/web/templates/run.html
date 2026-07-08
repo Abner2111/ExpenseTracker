@@ -8,6 +8,11 @@
   <p style="color: var(--text-muted); font-size: 0.88rem; margin: 0.4rem 0 0;">
     Sheet: {{ config.google_sheet_id or "(no configurado)" }} · Tab: {{ config.google_sheet_tab }} · Mes: {{ config.filter_by_month or "todos" }}
   </p>
+  {% if config.spreadsheet_url %}
+  <a href="{{ config.spreadsheet_url }}" target="_blank" rel="noopener">
+    <button type="button" class="secondary">📊 Abrir Spreadsheet ↗</button>
+  </a>
+  {% endif %}
 </div>
 
 <div class="card">
