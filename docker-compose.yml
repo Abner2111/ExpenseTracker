@@ -75,6 +75,7 @@ x-casaos:
     en_US: BAC Credomatic email expense tracker with Google Sheets sync
   description:
     en_US: Automated expense tracking from BAC Credomatic emails to Google Sheets, with a web UI for running the tracker, managing categorization rules, and reviewing processing history.
+  icon: https://cdn.jsdelivr.net/gh/Abner2111/ExpenseTracker@main/src/web/static/favicon.svg
   scheme: http
   port_map: "8000"
   index: /

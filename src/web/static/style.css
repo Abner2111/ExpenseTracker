@@ -51,9 +51,16 @@ body {
   gap: 0.15rem;
 }
 
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0.5rem 1rem;
+}
+
 .sidebar h1 {
   font-size: 1.05rem;
-  margin: 0 0.5rem 1rem;
+  margin: 0;
   color: #fff;
 }
 

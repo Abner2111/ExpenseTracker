@@ -4,12 +4,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ExpenseTracker{% block title %}{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
   <div class="layout">
     <nav class="sidebar">
-      <h1>ExpenseTracker</h1>
+      <div class="sidebar-brand">
+        <img src="/static/favicon.svg" alt="" width="26" height="26">
+        <h1>ExpenseTracker</h1>
+      </div>
       <a class="nav-link {{ 'active' if active_page == 'run' else '' }}" href="/run">▶ Run</a>
       <a class="nav-link {{ 'active' if active_page == 'config' else '' }}" href="/config">⚙ Config</a>
       <a class="nav-link {{ 'active' if active_page == 'status' else '' }}" href="/status">● Status</a>
