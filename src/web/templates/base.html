@@ -9,7 +9,14 @@
 </head>
 <body>
   <div class="layout">
-    <nav class="sidebar">
+    <header class="topbar">
+      <div class="sidebar-brand">
+        <img src="/static/favicon.svg" alt="" width="24" height="24">
+        <span class="brand-text">ExpenseTracker</span>
+      </div>
+      <button class="menu-toggle" id="menu-toggle" aria-label="Menu" aria-expanded="false">☰</button>
+    </header>
+    <nav class="sidebar" id="sidebar">
       <div class="sidebar-brand">
         <img src="/static/favicon.svg" alt="" width="26" height="26">
         <h1>ExpenseTracker</h1>
@@ -23,9 +30,26 @@
       <a class="nav-link {{ 'active' if active_page == 'db_test' else '' }}" href="/db/test">Test</a>
       <a class="nav-link {{ 'active' if active_page == 'db_history' else '' }}" href="/db/history">History</a>
     </nav>
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
     <main class="content">
       {% block content %}{% endblock %}
     </main>
   </div>
+  <script>
+    const sidebarEl = document.getElementById("sidebar");
+    const backdropEl = document.getElementById("sidebar-backdrop");
+    const toggleEl = document.getElementById("menu-toggle");
+
+    function closeSidebar() {
+      sidebarEl.classList.remove("open");
+      toggleEl.setAttribute("aria-expanded", "false");
+    }
+
+    toggleEl.addEventListener("click", () => {
+      const open = sidebarEl.classList.toggle("open");
+      toggleEl.setAttribute("aria-expanded", String(open));
+    });
+    backdropEl.addEventListener("click", closeSidebar);
+  </script>
 </body>
 </html>
