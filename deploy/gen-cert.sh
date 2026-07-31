@@ -13,10 +13,14 @@ set -e
 SAN="${1:?Usage: gen-cert.sh <ip-or-hostname>}"
 mkdir -p certs
 
-case "$SAN" in
-  [0-9]*.[0-9]*.[0-9]*.[0-9]*) ALT="IP:$SAN" ;;
-  *) ALT="DNS:$SAN" ;;
-esac
+# Anchored regex, not a shell glob: a glob like [0-9]*.[0-9]*.[0-9]*.[0-9]* looks
+# IP-shaped but the bare `*` matches ANY characters (not just digits), so it was
+# wrongly matching hostnames like 192.168.0.112.nip.io as an IP address too.
+if printf '%s' "$SAN" | grep -Eq '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$'; then
+  ALT="IP:$SAN"
+else
+  ALT="DNS:$SAN"
+fi
 
 openssl req -x509 -newkey rsa:2048 -nodes -days 3650 \
   -keyout certs/key.pem -out certs/cert.pem \
