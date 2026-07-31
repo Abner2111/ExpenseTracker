@@ -61,14 +61,13 @@ def oauth_start(request: Request):
     flow = _build_flow(request)
     # prompt=consent forces Google to reissue a refresh_token every time - without
     # it, a second authorization for the same account can come back access-token-only.
-    # device_id/device_name are required by Google for redirect URIs on a private
-    # IP (RFC 1918, e.g. 192.168.x.x) - arbitrary values, just need to be present.
+    # (device_id/device_name are NOT wanted here - those are only for redirect URIs
+    # that are a literal private IP; ours is a real hostname via nip.io, and Google
+    # rejects device_id/device_name for this "Web application" client type.)
     authorization_url, state = flow.authorization_url(
         access_type="offline",
         prompt="consent",
         include_granted_scopes="true",
-        device_id="expensetracker-web-oauth",
-        device_name="ExpenseTracker Web UI",
     )
     _pending_state["value"] = state
     return RedirectResponse(url=authorization_url, status_code=303)
