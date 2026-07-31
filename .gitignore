@@ -2,6 +2,8 @@
 credentials.json
 src/token.pickle
 token.pickle
+src/web_credentials.json
+certs/
 
 # Log files
 *.log

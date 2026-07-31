@@ -22,7 +22,19 @@
   <form method="post" action="/status/verify">
     <button type="submit">🔄 Verify Setup (Gmail + Sheets, en vivo)</button>
   </form>
+  <a href="/oauth/start"><button type="button" class="secondary">🔑 Renovar acceso de Google</button></a>
+  <p style="color: var(--text-muted); font-size: 0.82rem; margin: 0.5rem 0 0;">
+    Te lleva a la pantalla de consentimiento de Google. Úsalo si Gmail o Sheets dejan de
+    funcionar por un token expirado o revocado.
+  </p>
 </div>
+
+{% if oauth_renewed %}
+<div class="msg success">Acceso de Google renovado correctamente.</div>
+{% endif %}
+{% if oauth_error %}
+<div class="msg error">No se pudo renovar el acceso de Google: {{ oauth_error }}</div>
+{% endif %}
 
 {% if verify_error %}
 <div class="msg error">{{ verify_error }}</div>

@@ -25,6 +25,7 @@ from fastapi.staticfiles import StaticFiles
 from web.auth import require_auth
 from web.routes import config as config_routes
 from web.routes import db_history, db_rules, db_test, db_vendors
+from web.routes import oauth as oauth_routes
 from web.routes import run as run_routes
 from web.routes import status as status_routes
 
@@ -39,6 +40,7 @@ app.include_router(db_vendors.router)
 app.include_router(db_rules.router)
 app.include_router(db_test.router)
 app.include_router(db_history.router)
+app.include_router(oauth_routes.router)
 
 
 @app.get("/")

@@ -30,13 +30,15 @@ def _filesystem_checks() -> dict:
 
 
 @router.get("/status")
-def status_page(request: Request, verify_result: str | None = None):
+def status_page(request: Request, oauth_renewed: bool = False, oauth_error: str | None = None):
     return templates.TemplateResponse(
         "status.html",
         {
             "request": request,
             "active_page": "status",
             "checks": _filesystem_checks(),
+            "oauth_renewed": oauth_renewed,
+            "oauth_error": oauth_error,
         },
     )
 
